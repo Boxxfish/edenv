@@ -7,6 +7,7 @@ import click
 from pathlib import Path
 from shutil import copytree
 from os import path
+import yaml
 
 @click.group()
 def main():
@@ -30,7 +31,22 @@ def init(name):
 
 @main.command()
 def list():
-    click.echo("list")
+    # Open configuration file
+    config_path = Path("project.yaml")
+    if not config_path.exists():
+        click.echo("Error: Could not find project.yaml.", err=True)
+        return
+    with open("project.yaml", "r") as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+
+        # List environments in project
+        click.echo("Environments in this project:")
+        envs = config["envs"]
+        if envs is None:
+            click.echo("None")
+        else:
+            for env in envs:
+                click.echo(f"{env}")
 
 
 if __name__ == "__main__":
