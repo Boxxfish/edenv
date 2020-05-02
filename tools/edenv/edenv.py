@@ -9,9 +9,11 @@ from shutil import copytree
 from os import path
 import yaml
 
+
 @click.group()
 def main():
     pass
+
 
 @main.command()
 @click.argument("name")
