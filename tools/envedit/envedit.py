@@ -14,7 +14,7 @@ class EnvEdit(ShowBase):
         ShowBase.__init__(self)
 
         # Initial scene setup
-        # self.disableMouse()
+        self.disableMouse()
 
         # Add floor
         self.floor_node = FloorNode(self)
@@ -22,7 +22,7 @@ class EnvEdit(ShowBase):
         floor_path.setTwoSided(True)
 
         # Add camera controller
-        # self.cam_controller = CameraController(self, self.camera)
+        self.cam_controller = CameraController(self, self.render, self.camera)
 
 if __name__ == "__main__":
     app = EnvEdit()
