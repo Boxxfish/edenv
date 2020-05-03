@@ -1,5 +1,7 @@
 """
 Node for Panda3d that renders a floor.
+
+@author Ben Giacalone
 """
 from pathlib import Path
 from panda3d.core import GeomVertexFormat, Geom, GeomVertexData, GeomVertexWriter, GeomTriangles, GeomNode, \

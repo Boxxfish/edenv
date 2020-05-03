@@ -7,6 +7,8 @@ Environment editor for EDEnv.
 from direct.showbase.ShowBase import ShowBase
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.floor_node import FloorNode
+from tools.envedit.graph_viewer import GraphViewer
+
 
 class EnvEdit(ShowBase):
 
@@ -23,6 +25,10 @@ class EnvEdit(ShowBase):
 
         # Add camera controller
         self.cam_controller = CameraController(self, self.render, self.camera)
+
+        # Add graph viewer
+        self.graph_viewer = GraphViewer(self, self.render)
+
 
 if __name__ == "__main__":
     app = EnvEdit()
