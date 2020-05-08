@@ -12,7 +12,7 @@ class GUIList(GUIComponent):
 
     def __init__(self):
         GUIComponent.__init__(self)
-        self.set_child(GUIStackLayout())
+        self.child = GUIStackLayout()
         self.selected_item = None
 
     # Sets the selected item
@@ -38,14 +38,12 @@ class GUIList(GUIComponent):
         p_index = self.child.children.index(parent)
         for list_item in parent.sub_list:
             self.add_item(list_item, p_index + 1)
-        self.update()
 
     # Removes the parent's sub-list from the list
     def remove_sub_list(self, parent):
         # Find the parent in the list
         for list_item in parent.sub_list:
             self.remove_item(list_item)
-        self.update()
 
     def update(self):
         self.child.bbox.x = self.bbox.x

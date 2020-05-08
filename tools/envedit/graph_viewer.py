@@ -3,69 +3,67 @@ Controls the scene graph viewer.
 
 @author Ben Giacalone
 """
-from direct.gui.DirectGui import DirectFrame, DirectLabel, DirectButton
-from direct.showbase.Loader import Loader, TextNode
+
 from pathlib import Path
 from panda3d.core import Filename
 from os import path
 from tools.envedit.graph_node import GraphNode
+from tools.envedit.gui.gui_component import GUIComponent
+from tools.envedit.gui.gui_frame import GUIFrame
+from tools.envedit.gui.gui_label import GUILabel
+from tools.envedit.gui.gui_list import GUIList
+from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
+from tools.envedit.gui.gui_stack_layout import GUIStackLayout
+from tools.envedit.gui.gui_system import GUISystem
 
 
-class GraphViewer:
+class GraphViewer(GUIFrame):
 
-    def __init__(self, base, render):
+    def __init__(self):
+        GUIFrame.__init__(self)
+
         # State vars
-        self.render = render
-        self.base = base
-        self.scene_root = GraphNode(name="root")
+        self.scene_root = GraphNode(name="Scene Root")
         graph_a = GraphNode(name="Object A")
         graph_a.add_child(GraphNode(name="Object 1"))
         graph_a.add_child(GraphNode(name="Object 2"))
         self.scene_root.add_child(graph_a)
         self.scene_root.add_child(GraphNode(name="Object B"))
 
-        # Load fonts
-        font_path = Path(path.realpath(__file__)).parent.parent.parent / "res/fonts"
-        font_loader = Loader(self.base)
-        self.font_reg = font_loader.loadFont(Filename(font_path / "Jura/static/Jura-Regular.ttf").cStr())
-        self.font_bold = font_loader.loadFont(Filename(font_path / "Jura/static/Jura-Bold.ttf").cStr())
+        # GUI settings
+        self.bg_color = (0, 0, 0, 0.8)
+        self.bbox.width = 300
 
-        # Create frame to store object labels
-        frame_size = 0.8 / 2
-        self.frame = DirectFrame(frameColor=(0, 0, 0, 0.6),
-                                 frameSize=(-frame_size, frame_size, -frame_size * 2.5, frame_size * 2.5),
-                                 pos=(-.95, 0, 0))
+        layout = GUIStackLayout()
+        self.set_child(layout)
 
-        # Create graph viewer title
-        self.title = DirectLabel(text="Scene Graph",
-                                 parent=self.frame,
-                                 scale=0.1,
-                                 pos=(0, 0, 0.6),
-                                 text_font=self.font_bold,
-                                 text_fg=(1, 1, 1, 1),
-                                 frameColor=(0, 0, 0, 0))
+        title = GUILabel()
+        title.text_size = 30
+        title.set_font(GUISystem.get_font("default_light"))
+        title.set_text("Scene Graph")
+        layout.add_child(title)
+
+        spacer = GUIComponent()
+        spacer.bbox.height = 20
+        layout.add_child(spacer)
+
+        scene_list = GUIList()
+        layout.add_child(scene_list)
 
         # Set up scene tree
-        self.root_label, _ = self.setup_scene_tree(self.scene_root, self.frame, 0)
-        self.root_label.setScale(0.1)
-        self.root_label.setPos(-0.3, 0, 0.4)
-
-        self.frame.resetFrameSize()
+        self.setup_scene_tree(self.scene_root, scene_list)
+        self.update()
 
     # Adds a node from the scene tree to the graph viewer.
-    def setup_scene_tree(self, node, parent, index):
-        # Create text label
-        label = DirectButton(text=node.name,
-                             parent=parent,
-                             pos=(1, 0, (index + 1) * -1.2),
-                             text_align=TextNode.ALeft,
-                             text_font=self.font_reg,
-                             text_fg=(1, 1, 1, 1),
-                             frameColor=(0, 0, 0, 0))
+    def setup_scene_tree(self, node, parent):
+        # Create list item element
+        list_item = GUIListDropdown()
+        list_item.label.set_text(node.name)
+        if type(parent) == GUIList:
+            parent.add_item(list_item)
+        else:
+            parent.add_sub_item(list_item)
 
         # Propagate to children
-        c_index = 0
         for child in node.children:
-            _, c_index = self.setup_scene_tree(child, label, c_index)
-
-        return label, c_index + index + 1
+            self.setup_scene_tree(child, list_item)
