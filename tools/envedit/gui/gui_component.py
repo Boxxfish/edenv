@@ -11,6 +11,7 @@ class GUIComponent:
     def __init__(self):
         self.bbox = BoundingBox()
         self.child = None
+        self.gui_system = None
         self.receive_events = True
         self.rendering = False
 

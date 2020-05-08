@@ -12,10 +12,12 @@ from tools.envedit.gui.gui_window import GUIWindow
 
 class GUISystem(DirectObject):
     fonts = {}
+    gui_system = None
 
     def __init__(self, base):
         DirectObject.__init__(self)
         self.base = base
+        GUISystem.gui_system = self
 
         # Register events
         self.accept("window-event", self.handle_window)
@@ -77,3 +79,9 @@ class GUISystem(DirectObject):
     def get_font(font_name):
         if font_name in GUISystem.fonts:
             return GUISystem.fonts[font_name]
+
+    # Updates the entire UI
+    # This should NEVER be called from a component's update
+    @staticmethod
+    def update_all():
+        GUISystem.gui_system.window.update()

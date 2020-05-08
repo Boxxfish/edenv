@@ -6,6 +6,7 @@ Contains a series of list items.
 from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
+from tools.envedit.gui.gui_system import GUISystem
 
 
 class GUIList(GUIComponent):
@@ -26,12 +27,12 @@ class GUIList(GUIComponent):
     def add_item(self, item, index=-1):
         item.list_container = self
         self.child.add_child(item, index)
-        self.update()
+        GUISystem.update_all()
 
     # Removes an item from the list
     def remove_item(self, item):
         self.child.remove_child(item)
-        self.update()
+        GUISystem.update_all()
 
     # Adds the parent's sub-list to the list
     def add_sub_list(self, parent):
