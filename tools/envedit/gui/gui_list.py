@@ -31,6 +31,9 @@ class GUIList(GUIComponent):
 
     # Removes an item from the list
     def remove_item(self, item):
+        if type(item) == GUIListDropdown and item.expanded:
+            item.collapse()
+        item.deselect()
         self.child.remove_child(item)
         GUISystem.update_all()
 

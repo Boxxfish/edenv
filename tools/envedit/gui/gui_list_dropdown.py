@@ -53,17 +53,10 @@ class GUIListDropdown(GUIListItem):
 
     # Handles the dropdown button being clicked
     def on_dropdown_click(self):
-        # Update arrow
-        self.expanded = not self.expanded
-        self.dropdown_button.set_bg_image("down_arrow.png" if self.expanded else "right_arrow.png")
-
-        # Add or remove the sub-list items
         if self.expanded:
-            self.list_container.add_sub_list(self)
+            self.collapse()
         else:
-            if self.list_container.selected_item in self.sub_list:
-                self.select()
-            self.list_container.remove_sub_list(self)
+            self.expand()
 
     # Adds a sub-list item to the dropdown
     def add_sub_item(self, item):
@@ -72,3 +65,18 @@ class GUIListDropdown(GUIListItem):
         item.level_spacer.bbox.width = 22 * item.level
         self.sub_list.append(item)
         self.update()
+
+    # Expands this dropdown
+    def expand(self):
+        self.expanded = True
+        self.dropdown_button.set_bg_image("down_arrow.png")
+        self.list_container.add_sub_list(self)
+
+    # Collapses this dropdown
+    def collapse(self):
+        self.expanded = False
+        self.dropdown_button.set_bg_image("right_arrow.png")
+        self.list_container.remove_sub_list(self)
+        if self.list_container.selected_item in self.sub_list:
+            self.select()
+
