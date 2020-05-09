@@ -22,7 +22,7 @@ class GraphViewer(GUIFrame):
     def __init__(self):
         GUIFrame.__init__(self)
 
-        # State vars
+        # Scene graph
         self.scene_root = GraphNode(name="Scene Root")
         graph_a = GraphNode(name="Object A")
         graph_a.add_child(GraphNode(name="Object 1"))
@@ -33,6 +33,7 @@ class GraphViewer(GUIFrame):
         # GUI settings
         self.bg_color = (0, 0, 0, 0.8)
         self.bbox.width = 300
+        self.padding = 10
 
         layout = GUIStackLayout()
         self.set_child(layout)

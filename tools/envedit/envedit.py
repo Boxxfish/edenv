@@ -6,19 +6,12 @@ Environment editor for EDEnv.
 
 from direct.showbase.ShowBase import ShowBase
 from tools.envedit.camera_controller import CameraController
+from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.floor_node import FloorNode
 from tools.envedit.graph_viewer import GraphViewer
-from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
-from tools.envedit.gui.gui_frame import GUIFrame
-from tools.envedit.gui.gui_label import GUILabel
-from tools.envedit.gui.gui_list import GUIList
-from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
-from tools.envedit.gui.gui_list_item import GUIListItem
-from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
-from string import ascii_lowercase
 
 
 class EnvEdit(ShowBase):
@@ -36,6 +29,8 @@ class EnvEdit(ShowBase):
         GUISystem.fonts["default"] = GUIFontLoader.load_font("open-sans/OpenSans-Regular.ttf")
         GUISystem.fonts["default_bold"] = GUIFontLoader.load_font("open-sans/OpenSans-Bold.ttf")
         GUISystem.fonts["default_light"] = GUIFontLoader.load_font("open-sans/OpenSans-Light.ttf")
+        window_layout = GUIDockLayout()
+        self.gui_system.window.set_child(window_layout)
 
         # Add floor
         self.floor_node = FloorNode(self)
@@ -47,11 +42,11 @@ class EnvEdit(ShowBase):
 
         # Add graph viewer
         self.graph_viewer = GraphViewer()
-
-        window_layout = GUIDockLayout()
         window_layout.set_child_dock(self.graph_viewer, GUIDockLayout.LEFT)
 
-        self.gui_system.window.set_child(window_layout)
+        # Add component viewer
+        self.component_viewer = ComponentViewer()
+        window_layout.set_child_dock(self.component_viewer, GUIDockLayout.RIGHT)
 
 
 if __name__ == "__main__":
