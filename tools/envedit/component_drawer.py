@@ -7,6 +7,7 @@ from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
+from tools.envedit.gui.gui_text_box import GUITextBox
 from tools.envedit.property_type import PropertyType
 
 
@@ -59,20 +60,19 @@ class ComponentDrawer(GUIFrame):
             spacer.bbox.width = 20
             property_layout.add_child(spacer)
 
-            # TODO: Replace the labels with editable text boxes
             if property_type == PropertyType.INT:
-                property_val = GUILabel()
+                property_val = GUITextBox()
                 property_val.set_text("0")
                 property_layout.add_child(property_val)
             elif property_type == PropertyType.FLOAT:
-                property_val = GUILabel()
+                property_val = GUITextBox()
                 property_val.set_text("0.0")
                 property_layout.add_child(property_val)
             elif property_type == PropertyType.BOOL:
-                property_val = GUILabel()
+                property_val = GUITextBox()
                 property_val.set_text("True")
                 property_layout.add_child(property_val)
             elif property_type == PropertyType.STRING:
-                property_val = GUILabel()
+                property_val = GUITextBox()
                 property_val.set_text("Text")
                 property_layout.add_child(property_val)
