@@ -7,8 +7,11 @@ Environment editor for EDEnv.
 from direct.showbase.ShowBase import ShowBase
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
+from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
+from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
+from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
@@ -32,6 +35,15 @@ class EnvEdit(ShowBase):
         window_layout = GUIDockLayout()
         self.gui_system.window.set_child(window_layout)
 
+        # Set up scene data
+        self.envedit_data = EnveditData()
+        self.envedit_data.update_callback = self.update_gui
+
+        self.envedit_data.scene_root = GraphNode("Scene Root", [])
+        pos_comp = EComponent()
+        pos_comp.set_script("components.position")
+        self.envedit_data.scene_root.add_child(GraphNode("Object 1", [pos_comp]))
+
         # Add floor
         self.floor_node = FloorNode(self)
         floor_path = self.render.attach_new_node(self.floor_node)
@@ -43,11 +55,20 @@ class EnvEdit(ShowBase):
         # Add graph viewer
         self.graph_viewer = GraphViewer()
         window_layout.set_child_dock(self.graph_viewer, GUIDockLayout.LEFT)
+        self.graph_viewer.set_envedit_data(self.envedit_data)
+        self.graph_viewer.update_viewer()
 
         # Add component viewer
         self.component_viewer = ComponentViewer()
         window_layout.set_child_dock(self.component_viewer, GUIDockLayout.RIGHT)
+        self.component_viewer.set_envedit_data(self.envedit_data)
 
+        self.update_gui()
+
+    # Updates the GUI after a change to the scene
+    def update_gui(self):
+        #self.graph_viewer.update_viewer()
+        self.component_viewer.update_viewer()
 
 if __name__ == "__main__":
     app = EnvEdit()

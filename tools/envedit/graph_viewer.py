@@ -23,12 +23,7 @@ class GraphViewer(GUIFrame):
         GUIFrame.__init__(self)
 
         # Scene graph
-        self.scene_root = GraphNode(name="Scene Root")
-        graph_a = GraphNode(name="Object A")
-        graph_a.add_child(GraphNode(name="Object 1"))
-        graph_a.add_child(GraphNode(name="Object 2"))
-        self.scene_root.add_child(graph_a)
-        self.scene_root.add_child(GraphNode(name="Object B"))
+        self.envedit_data = None
 
         # GUI settings
         self.bg_color = (0, 0, 0, 0.8)
@@ -48,18 +43,16 @@ class GraphViewer(GUIFrame):
         spacer.bbox.height = 20
         layout.add_child(spacer)
 
-        scene_list = GUIList()
-        layout.add_child(scene_list)
-
-        # Set up scene tree
-        self.setup_scene_tree(self.scene_root, scene_list)
-        self.update()
+        self.scene_list = GUIList()
+        layout.add_child(self.scene_list)
 
     # Adds a node from the scene tree to the graph viewer.
     def setup_scene_tree(self, node, parent):
         # Create list item element
         list_item = GUIListDropdown()
         list_item.label.set_text(node.name)
+        list_item.data = node
+        list_item.select_callback = self.list_item_clicked
         if type(parent) == GUIList:
             parent.add_item(list_item)
         else:
@@ -68,3 +61,24 @@ class GraphViewer(GUIFrame):
         # Propagate to children
         for child in node.children:
             self.setup_scene_tree(child, list_item)
+
+    # Clears all nodes from viewer
+    def clear_viewer(self):
+        # Removing the root item removes all items in the list
+        if len(self.scene_list.child.children) > 0:
+            self.scene_list.remove_item(self.scene_list.child.children[0])
+
+    # Sets the data model
+    def set_envedit_data(self, envedit_data):
+        self.envedit_data = envedit_data
+
+    # Updates the viewer
+    def update_viewer(self):
+        if self.envedit_data is not None:
+            self.clear_viewer()
+            self.setup_scene_tree(self.envedit_data.scene_root, self.scene_list)
+
+    # Called when a list item is clicked
+    def list_item_clicked(self, item):
+        self.envedit_data.target_node = item.data
+        self.envedit_data.update()

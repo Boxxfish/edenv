@@ -19,13 +19,7 @@ class ComponentViewer(GUIFrame):
     def __init__(self):
         GUIFrame.__init__(self)
 
-        # List of components
-        components_path = Path(path.realpath(__file__)).parent.parent.parent / "components"
-        self.components = []
-
-        pos_component = EComponent()
-        pos_component.set_script("components.position")
-        self.components.append(pos_component)
+        self.envedit_data = None
 
         # GUI settings
         self.bg_color = (0, 0, 0, 0.8)
@@ -52,5 +46,22 @@ class ComponentViewer(GUIFrame):
 
     # Sets up the components for the viewer
     def setup_components(self):
-        for component in self.components:
-            self.component_layout.add_child(ComponentDrawer(component))
+        if self.envedit_data is not None and self.envedit_data.target_node is not None:
+            for component in self.envedit_data.target_node.data:
+                self.component_layout.add_child(ComponentDrawer(component))
+
+    # Clears the component viewer
+    def clear_viewer(self):
+        for child in self.component_layout.children:
+            self.component_layout.remove_child(child)
+
+    # Sets the data model
+    def set_envedit_data(self, envedit_data):
+        self.envedit_data = envedit_data
+
+    # Updates the viewer
+    def update_viewer(self):
+        if self.envedit_data is not None and self.envedit_data.target_node is not None:
+            self.clear_viewer()
+            self.setup_components()
+            self.update()
