@@ -3,6 +3,8 @@ Controls the component viewer.
 
 @author Ben Giacalone
 """
+from os import path
+from pathlib import Path
 from tools.envedit.component_drawer import ComponentDrawer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gui.gui_component import GUIComponent
@@ -18,9 +20,12 @@ class ComponentViewer(GUIFrame):
         GUIFrame.__init__(self)
 
         # List of components
+        components_path = Path(path.realpath(__file__)).parent.parent.parent / "components"
         self.components = []
-        self.components.append(EComponent("Position"))
-        self.components.append(EComponent("MeshGraphic"))
+
+        pos_component = EComponent()
+        pos_component.set_script("components.position")
+        self.components.append(pos_component)
 
         # GUI settings
         self.bg_color = (0, 0, 0, 0.8)
