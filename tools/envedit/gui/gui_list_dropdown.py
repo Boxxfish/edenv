@@ -28,7 +28,9 @@ class GUIListDropdown(GUIListItem):
 
         self.dropdown_button = GUIButton()
         self.dropdown_button.set_bg_image("right_arrow.png")
-        self.dropdown_button.set_bg_color((1, 1, 1, 0.8))
+        self.dropdown_button.set_normal_color((1, 1, 1, 0.8))
+        self.dropdown_button.set_hover_color((1, 1, 1, 0.8))
+        self.dropdown_button.set_pressed_color((1, 1, 1, 0.8))
         self.dropdown_button.bbox.width = 16
         self.dropdown_button.on_click = self.on_dropdown_click
 
@@ -52,7 +54,7 @@ class GUIListDropdown(GUIListItem):
         self.set_child(self.layout)
 
     # Handles the dropdown button being clicked
-    def on_dropdown_click(self):
+    def on_dropdown_click(self, button):
         if self.expanded:
             self.collapse()
         else:

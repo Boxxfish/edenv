@@ -13,6 +13,7 @@ from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_list import GUIList
 from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
+from tools.envedit.gui.gui_menu_item import GUIMenuItem
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
 
@@ -53,6 +54,7 @@ class GraphViewer(GUIFrame):
         list_item.label.set_text(node.name)
         list_item.data = node
         list_item.select_callback = self.list_item_clicked
+        list_item.right_release_callback = self.list_item_right_released
         if type(parent) == GUIList:
             parent.add_item(list_item)
         else:
@@ -82,3 +84,20 @@ class GraphViewer(GUIFrame):
     def list_item_clicked(self, item):
         self.envedit_data.target_node = item.data
         self.envedit_data.update()
+
+    # Called when a list item is right clicked
+    def list_item_right_released(self, item):
+        # Create context menu
+        menu = GUISystem.create_context_menu()
+
+        add_node_button = GUIMenuItem()
+        add_node_button.child.set_text("Create Child Node")
+        menu.child.add_child(add_node_button)
+
+        del_node_button = GUIMenuItem()
+        del_node_button.child.set_text("Delete Node")
+        menu.child.add_child(del_node_button)
+
+        # No clue why this works
+        menu.update()
+        menu.update()

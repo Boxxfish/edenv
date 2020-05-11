@@ -6,6 +6,7 @@ EDEnv's GUI manager.
 from direct.showbase.DirectObject import DirectObject
 from direct.task import Task
 
+from tools.envedit.gui.gui_context_menu import GUIContextMenu
 from tools.envedit.gui.panda_gui_utils import GUIUtils
 from tools.envedit.gui.gui_window import GUIWindow
 
@@ -23,6 +24,8 @@ class GUISystem(DirectObject):
         self.accept("window-event", self.handle_window)
         self.accept("mouse1", self.handle_left_mouse_pressed)
         self.accept("mouse1-up", self.handle_left_mouse_released)
+        self.accept("mouse3", self.handle_right_mouse_pressed)
+        self.accept("mouse3-up", self.handle_right_mouse_released)
 
         # Update GUIUtils
         GUIUtils.window_width = self.base.win.getXSize()
@@ -30,7 +33,7 @@ class GUISystem(DirectObject):
 
         # Set up GUI components
         self.window = GUIWindow()
-        self.window.rendering = True
+        self.window.add_render()
         self.target_component = self.window     # the target is the component the cursor is currently over
 
         # Set up mouse polling
@@ -48,11 +51,23 @@ class GUISystem(DirectObject):
     def handle_left_mouse_pressed(self):
         if self.target_component is not None:
             self.target_component.handle_left_pressed()
+        self.close_context_menu()
 
     # Left mouse released event handler
     def handle_left_mouse_released(self):
         if self.target_component is not None:
             self.target_component.handle_left_released()
+
+    # Right mouse pressed event handler
+    def handle_right_mouse_pressed(self):
+        self.close_context_menu()
+        if self.target_component is not None:
+            self.target_component.handle_right_pressed()
+
+    # Right mouse released event handler
+    def handle_right_mouse_released(self):
+        if self.target_component is not None:
+            self.target_component.handle_right_released()
 
     # Cursor position polling task
     def poll_cursor(self, task):
@@ -85,3 +100,17 @@ class GUISystem(DirectObject):
     @staticmethod
     def update_all():
         GUISystem.gui_system.window.update()
+
+    # Creates a context menu at the current cursor location
+    # Returns a component
+    @staticmethod
+    def create_context_menu():
+        context_menu = GUIContextMenu()
+        context_menu.bbox.x = GUISystem.gui_system.cursor_x
+        context_menu.bbox.y = GUISystem.gui_system.cursor_y
+        GUISystem.gui_system.window.context_menu_layer.add_child(context_menu)
+        return context_menu
+
+    # Closes any context menus
+    def close_context_menu(self):
+        self.window.context_menu_layer.clear()

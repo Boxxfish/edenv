@@ -20,6 +20,7 @@ class GUIComponent:
         self.child = child
         if self.rendering:
             self.child.add_render()
+        self.update()
 
     # Updates the component after a change
     def update(self):
@@ -53,6 +54,14 @@ class GUIComponent:
 
     # Handles the left mouse button being released over this component
     def handle_left_released(self):
+        pass
+
+    # Handles the right mouse button being pressed over this component
+    def handle_right_pressed(self):
+        pass
+
+    # Handles the right mouse button being released over this component
+    def handle_right_released(self):
         pass
 
     # Handles the cursor entering this component
