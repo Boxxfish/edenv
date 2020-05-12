@@ -27,8 +27,8 @@ class GUIFreeLayout(GUILayout):
 
     # Removes all children from the layout
     def clear(self):
-        for child in self.children:
-            self.remove_child(child)
+        for _ in range(len(self.children)):
+            self.remove_child(self.children[0])
 
     # Checks if this component contains a point in screen space, then propagates to children
     # Note: this layout cannot respond to events
