@@ -46,12 +46,14 @@ class GUISystem(DirectObject):
         GUIUtils.window_width = window.size.x
         GUIUtils.window_height = window.size.y
         self.window.window_resized(window.size.x, window.size.y)
+        GUISystem.close_context_menu()
 
     # Left mouse pressed event handler
     def handle_left_mouse_pressed(self):
+        if not self.window.selected_context_menu:
+            GUISystem.close_context_menu()
         if self.target_component is not None:
             self.target_component.handle_left_pressed()
-        self.close_context_menu()
 
     # Left mouse released event handler
     def handle_left_mouse_released(self):
@@ -60,7 +62,8 @@ class GUISystem(DirectObject):
 
     # Right mouse pressed event handler
     def handle_right_mouse_pressed(self):
-        self.close_context_menu()
+        if not self.window.selected_context_menu:
+            GUISystem.close_context_menu()
         if self.target_component is not None:
             self.target_component.handle_right_pressed()
 
@@ -111,6 +114,15 @@ class GUISystem(DirectObject):
         GUISystem.gui_system.window.context_menu_layer.add_child(context_menu)
         return context_menu
 
+    # Places a context menu below a component
+    # Returns a component
+    @staticmethod
+    def place_dropdown(parent, menu):
+        menu.bbox.x = parent.bbox.x
+        menu.bbox.y = parent.bbox.y + parent.bbox.height
+        GUISystem.gui_system.window.context_menu_layer.add_child(menu)
+
     # Closes any context menus
-    def close_context_menu(self):
-        self.window.context_menu_layer.clear()
+    @staticmethod
+    def close_context_menu():
+        GUISystem.gui_system.window.context_menu_layer.clear()

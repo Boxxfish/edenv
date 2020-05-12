@@ -20,3 +20,6 @@ class GUIMenuItem(GUIButton):
         self.set_pressed_color((0.4, 0.4, 0.4, 1))
         self.padding = 1
 
+    def handle_left_released(self):
+        GUIButton.handle_left_released(self)
+        GUISystem.close_context_menu()

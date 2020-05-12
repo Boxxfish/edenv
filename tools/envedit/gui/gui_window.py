@@ -12,6 +12,7 @@ class GUIWindow(GUIComponent):
     def __init__(self):
         GUIComponent.__init__(self)
         self.context_menu_layer = GUIFreeLayout()
+        self.selected_context_menu = False
 
     # Called when window is resized
     def window_resized(self, width, height):
@@ -30,8 +31,10 @@ class GUIWindow(GUIComponent):
         if self.bbox.point_inside(x, y) and self.receive_events:
             ctx_component = self.context_menu_layer.get_selected_component(x, y)
             if ctx_component is not None:
+                self.selected_context_menu = True
                 return ctx_component
             child_component = self.child.get_selected_component(x, y)
+            self.selected_context_menu = False
             return self if child_component is None else child_component
         return None
 
