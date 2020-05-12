@@ -4,6 +4,7 @@ A GUI component that displays properties of the EDEnv component.
 @author Ben Giacalone
 """
 from tools.envedit.gui.gui_component import GUIComponent
+from tools.envedit.gui.gui_dropdown import GUIDropdownVisualType, GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
@@ -29,6 +30,8 @@ class ComponentDrawer(GUIFrame):
         self.title.text_size = 15
         self.title.set_text(self.component.name)
         layout.add_child(self.title)
+
+        layout.add_child(GUIDropdown(GUIDropdownVisualType.VERTICAL))
 
         spacer = GUIComponent()
         spacer.bbox.height = 10
