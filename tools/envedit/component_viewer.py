@@ -3,8 +3,6 @@ Controls the component viewer.
 
 @author Ben Giacalone
 """
-from os import path
-from pathlib import Path
 from tools.envedit.component_drawer import ComponentDrawer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gui.gui_component import GUIComponent
@@ -20,7 +18,7 @@ class ComponentViewer(GUIFrame):
 
     def __init__(self):
         GUIFrame.__init__(self)
-
+        self.components = None
         self.envedit_data = None
 
         # GUI settings
@@ -41,25 +39,12 @@ class ComponentViewer(GUIFrame):
         spacer.bbox.height = 20
         layout.add_child(spacer)
 
-        add_component_dropdown = GUIDropdown()
-        add_component_dropdown.child.set_text("Add Component...")
-        layout.add_child(add_component_dropdown)
+        self.add_component_dropdown = GUIDropdown()
+        self.add_component_dropdown.child.set_text("Add Component...")
+        layout.add_child(self.add_component_dropdown)
 
         self.component_layout = GUIStackLayout()
         layout.add_child(self.component_layout)
-
-        # Add "add component" menu items
-        component_item = GUIMenuItem()
-        component_item.child.set_text("Position")
-        add_component_dropdown.menu.child.add_child(component_item)
-
-        component_item2 = GUIMenuItem()
-        component_item2.child.set_text("Agent")
-        add_component_dropdown.menu.child.add_child(component_item2)
-
-        component_item3 = GUIMenuItem()
-        component_item3.child.set_text("Component 2")
-        add_component_dropdown.menu.child.add_child(component_item3)
 
     # Sets up the components for the viewer
     def setup_components(self):
@@ -69,8 +54,7 @@ class ComponentViewer(GUIFrame):
 
     # Clears the component viewer
     def clear_viewer(self):
-        for child in self.component_layout.children:
-            self.component_layout.remove_child(child)
+        self.component_layout.clear()
 
     # Sets the data model
     def set_envedit_data(self, envedit_data):
@@ -82,3 +66,21 @@ class ComponentViewer(GUIFrame):
             self.clear_viewer()
             self.setup_components()
             self.update()
+
+    # Sets the list of components from configuration file
+    def set_components(self, components):
+        self.components = components
+        # Add "add component" menu items
+        for component in self.components:
+            component_item = GUIMenuItem()
+            component_item.child.set_text(component)
+            component_item.on_release = self.add_component_handler
+            component_item.data = self.components[component]
+            self.add_component_dropdown.menu.child.add_child(component_item)
+
+    # Handles a component to add being selected
+    def add_component_handler(self, item):
+        component = EComponent()
+        component.set_script(item.data)
+        self.envedit_data.target_node.data.append(component)
+        self.envedit_data.update()

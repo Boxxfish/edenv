@@ -50,6 +50,11 @@ class GUIStackLayout(GUILayout):
         self.children.remove(child)
         self.update()
 
+    # Removes all children from the layout
+    def clear(self):
+        for _ in range(len(self.children)):
+            self.remove_child(self.children[0])
+
     # Checks if this component contains a point in screen space, then propagates to children
     # Note: this layout cannot respond to events
     def get_selected_component(self, x, y):

@@ -3,11 +3,12 @@ Environment editor for EDEnv.
 
 @author Ben Giacalone
 """
-
+from pathlib import Path
+import sys
+import yaml
 from direct.showbase.ShowBase import ShowBase
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
-from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
@@ -25,6 +26,15 @@ class EnvEdit(ShowBase):
         # Initial scene setup
         self.disableMouse()
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)
+
+        # Read the project config file
+        config_path = Path("project.yaml")
+        config = None
+        if not config_path.exists():
+            sys.stderr.write("Error: Could not find project.yaml.")
+            return
+        with open("project.yaml", "r") as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
 
         # Set up GUI system
         self.gui_system = GUISystem(self)
@@ -57,6 +67,7 @@ class EnvEdit(ShowBase):
         self.component_viewer = ComponentViewer()
         window_layout.set_child_dock(self.component_viewer, GUIDockLayout.RIGHT)
         self.component_viewer.set_envedit_data(self.envedit_data)
+        self.component_viewer.set_components(config["components"])
 
         self.update_gui()
 

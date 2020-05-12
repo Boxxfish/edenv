@@ -2,3 +2,5 @@
 # Configuration file for project
 
 envs: 
+components:
+ Position: components.position
