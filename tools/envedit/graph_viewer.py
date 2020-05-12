@@ -84,6 +84,7 @@ class GraphViewer(GUIFrame):
             if child.data not in node.children:
                 list_item.remove_sub_item(child)
                 self.scene_list.remove_item(child)
+                list_item.select()
 
     # Clears all nodes from viewer
     def clear_viewer(self):
