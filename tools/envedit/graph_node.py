@@ -18,6 +18,11 @@ class GraphNode():
         node.parent = self
         self.children.append(node)
 
+    # Removes a child from this node.
+    def remove_child(self, node):
+        node.parent = None
+        self.children.remove(node)
+
     # Finds a child node in the graph
     def find_child(self, node):
         if self is node:

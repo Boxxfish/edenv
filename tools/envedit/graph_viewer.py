@@ -75,10 +75,15 @@ class GraphViewer(GUIFrame):
                 self.scene_list.add_item(list_item, self.scene_list.child.children.index(parent) + 1)
                 list_item.select()
 
-
         # Propagate to children
         for child in node.children:
             self.setup_scene_tree(child, list_item)
+
+        # If there exist any sub items of list_item that aren't children of the node, remove them
+        for child in list_item.sub_list:
+            if child.data not in node.children:
+                list_item.remove_sub_item(child)
+                self.scene_list.remove_item(child)
 
     # Clears all nodes from viewer
     def clear_viewer(self):
@@ -125,6 +130,8 @@ class GraphViewer(GUIFrame):
         if item.data is not self.envedit_data.scene_root:
             del_node_button = GUIMenuItem()
             del_node_button.child.set_text("Delete Node")
+            del_node_button.on_release = self.del_node_handler
+            del_node_button.data = item
             menu.child.add_child(del_node_button)
 
         # No clue why this works
@@ -138,6 +145,14 @@ class GraphViewer(GUIFrame):
         pos_comp.set_script("components.position")
         new_node = GraphNode(f"New Node ({len(item.data.sub_list)})", [pos_comp])
         item.data.data.add_child(new_node)
+
+        # Update model
+        self.envedit_data.update()
+
+    # Handles the "delete node" option being selected
+    def del_node_handler(self, item):
+        # Delete node from graph
+        item.data.data.parent.remove_child(item.data.data)
 
         # Update model
         self.envedit_data.update()
