@@ -3,10 +3,7 @@ Controls the scene graph viewer.
 
 @author Ben Giacalone
 """
-
-from pathlib import Path
-from panda3d.core import Filename
-from os import path
+from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_frame import GUIFrame
@@ -50,15 +47,34 @@ class GraphViewer(GUIFrame):
     # Adds a node from the scene tree to the graph viewer.
     def setup_scene_tree(self, node, parent):
         # Create list item element
-        list_item = GUIListDropdown()
-        list_item.label.set_text(node.name)
-        list_item.data = node
-        list_item.select_callback = self.list_item_clicked
-        list_item.right_release_callback = self.list_item_right_released
+        list_item = None
         if type(parent) == GUIList:
-            parent.add_item(list_item)
+            for item in parent.child.children:
+                if item.data is node:
+                    list_item = item
+                    break
         else:
-            parent.add_sub_item(list_item)
+            for item in parent.sub_list:
+                if item.data is node:
+                    list_item = item
+                    break
+
+        # If list item was not found, insert the new item into the hierarchy
+        if list_item is None:
+            list_item = self.create_new_item(node)
+
+            # For the root node, just add it to the scene list
+            if type(parent) == GUIList:
+                parent.add_item(list_item)
+
+            # Expand the parent if it's a collapsed dropdown, and add to the scene list
+            else:
+                if not parent.expanded:
+                    parent.expand()
+                parent.add_sub_item(list_item)
+                self.scene_list.add_item(list_item, self.scene_list.child.children.index(parent) + 1)
+                list_item.select()
+
 
         # Propagate to children
         for child in node.children:
@@ -70,15 +86,25 @@ class GraphViewer(GUIFrame):
         if len(self.scene_list.child.children) > 0:
             self.scene_list.remove_item(self.scene_list.child.children[0])
 
+    # Creates a new list item based off the scene node
+    def create_new_item(self, node):
+        list_item = GUIListDropdown()
+        list_item.label.set_text(node.name)
+        list_item.data = node
+        list_item.select_callback = self.list_item_clicked
+        list_item.right_release_callback = self.list_item_right_released
+        return list_item
+
     # Sets the data model
     def set_envedit_data(self, envedit_data):
         self.envedit_data = envedit_data
+        self.setup_scene_tree(self.envedit_data.scene_root, self.scene_list)
 
     # Updates the viewer
     def update_viewer(self):
         if self.envedit_data is not None:
-            self.clear_viewer()
             self.setup_scene_tree(self.envedit_data.scene_root, self.scene_list)
+            self.update()
 
     # Called when a list item is clicked
     def list_item_clicked(self, item):
@@ -92,12 +118,26 @@ class GraphViewer(GUIFrame):
 
         add_node_button = GUIMenuItem()
         add_node_button.child.set_text("Create Child Node")
+        add_node_button.on_release = self.add_node_handler
+        add_node_button.data = item
         menu.child.add_child(add_node_button)
 
-        del_node_button = GUIMenuItem()
-        del_node_button.child.set_text("Delete Node")
-        menu.child.add_child(del_node_button)
+        if item.data is not self.envedit_data.scene_root:
+            del_node_button = GUIMenuItem()
+            del_node_button.child.set_text("Delete Node")
+            menu.child.add_child(del_node_button)
 
         # No clue why this works
         menu.update()
         menu.update()
+
+    # Handles the "add node" option being selected
+    def add_node_handler(self, item):
+        # Create new node
+        pos_comp = EComponent()
+        pos_comp.set_script("components.position")
+        new_node = GraphNode(f"New Node ({len(item.data.sub_list)})", [pos_comp])
+        item.data.data.add_child(new_node)
+
+        # Update model
+        self.envedit_data.update()

@@ -38,11 +38,7 @@ class EnvEdit(ShowBase):
         # Set up scene data
         self.envedit_data = EnveditData()
         self.envedit_data.update_callback = self.update_gui
-
         self.envedit_data.scene_root = GraphNode("Scene Root", [])
-        pos_comp = EComponent()
-        pos_comp.set_script("components.position")
-        self.envedit_data.scene_root.add_child(GraphNode("Object 1", [pos_comp]))
 
         # Add floor
         self.floor_node = FloorNode(self)
@@ -56,7 +52,6 @@ class EnvEdit(ShowBase):
         self.graph_viewer = GraphViewer()
         window_layout.set_child_dock(self.graph_viewer, GUIDockLayout.LEFT)
         self.graph_viewer.set_envedit_data(self.envedit_data)
-        self.graph_viewer.update_viewer()
 
         # Add component viewer
         self.component_viewer = ComponentViewer()
@@ -67,7 +62,7 @@ class EnvEdit(ShowBase):
 
     # Updates the GUI after a change to the scene
     def update_gui(self):
-        #self.graph_viewer.update_viewer()
+        self.graph_viewer.update_viewer()
         self.component_viewer.update_viewer()
 
 if __name__ == "__main__":
