@@ -15,6 +15,7 @@ class EComponent:
     def set_script(self, script_path):
         # Import the first class in the script path
         module_name = script_path.split(".")[-1].title()
+        module_name = module_name.replace("_", "")
         module = __import__(script_path, fromlist=[module_name])
         component_class = getattr(module, module_name)
 
