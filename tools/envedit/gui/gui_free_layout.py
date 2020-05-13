@@ -42,6 +42,12 @@ class GUIFreeLayout(GUILayout):
 
     def update(self):
         for child in self.children:
+            # If child is outside bounds, reposition it back in
+            if child.bbox.x + child.bbox.width > self.bbox.x + self.bbox.width:
+                child.bbox.x -= (child.bbox.x + child.bbox.width) - (self.bbox.x + self.bbox.width)
+            if child.bbox.y + child.bbox.height > self.bbox.y + self.bbox.height:
+                child.bbox.y -= (child.bbox.y + child.bbox.height) - (self.bbox.y + self.bbox.height)
+
             child.update()
 
     def add_render(self):
