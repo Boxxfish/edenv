@@ -54,8 +54,8 @@ class ComponentDrawer(GUIFrame):
 
     # Sets up the component drawer
     def setup_drawer(self):
-        for property in self.component.properties:
-            property_type = self.component.properties[property]
+        for property in self.component.property_types:
+            property_type = self.component.property_types[property]
 
             property_frame = GUIFrame()
             property_frame.bbox.height = 30

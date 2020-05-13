@@ -34,9 +34,14 @@ class Toolbar(GUIFrame):
         file_dropdown.padding = 6
 
         new_button = GUIMenuItem()
-        new_button.child.set_text("New...")
+        new_button.child.set_text("New")
         new_button.on_release = self.file_new_option_handler
         file_dropdown.menu.child.add_child(new_button)
+
+        save_button = GUIMenuItem()
+        save_button.child.set_text("Save")
+        save_button.on_release = self.file_save_option_handler
+        file_dropdown.menu.child.add_child(save_button)
 
         buttons_layout.add_child(file_dropdown)
 
@@ -61,3 +66,15 @@ class Toolbar(GUIFrame):
         self.envedit_data.update()
 
         # TODO: When scene data is reset, if the dirt flag is set, bring up save dialog
+
+    def file_save_option_handler(self, item):
+        if self.envedit_data.save_path is None:
+            # Open file dialog
+            filetypes = [("JSON", "*.json")]
+            file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
+
+            # Save file
+            if file_path is not "":
+                self.envedit_data.save(file_path)
+        else:
+            self.envedit_data.save()

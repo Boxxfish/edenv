@@ -8,11 +8,16 @@ Components are backed by a script that specifies its properties.
 
 class EComponent:
 
-    def __init__(self, name="", properties={}):
+    def __init__(self, name="", property_types={}):
         self.name = name
-        self.properties = properties
+        self.property_types = property_types
+        self.property_vals = None
+        self.script_path = None
 
+    # Sets the component's script and its property types
     def set_script(self, script_path):
+        self.script_path = script_path
+
         # Import the first class in the script path
         module_name = script_path.split(".")[-1].title()
         module_name = module_name.replace("_", "")
@@ -21,4 +26,11 @@ class EComponent:
 
         # Set properties of EComponent
         self.name = module_name
-        self.properties = component_class.get_properties()
+        self.property_types = component_class.get_properties()
+
+    # Returns a dictionary with the values of the component
+    def to_dict(self):
+        component_dict = {}
+        component_dict["script_path"] = self.script_path
+        component_dict["values"] = self.property_vals
+        return component_dict

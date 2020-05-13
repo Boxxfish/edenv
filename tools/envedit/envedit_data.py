@@ -3,6 +3,8 @@ Data for envedit. The model of MVC.
 
 @author Ben Giacalone
 """
+import json
+
 from tools.envedit.graph_node import GraphNode
 
 
@@ -12,6 +14,7 @@ class EnveditData:
         self.scene_root = GraphNode("Scene Root")
         self.target_node = None
         self.dirty = True                          # if the data was changed since saving
+        self.save_path = None
         self.update_callback = None
 
     # Updates the GUI after any change
@@ -22,3 +25,24 @@ class EnveditData:
     # Turns the dirty flag on
     def modify(self):
         self.dirty = True
+
+    # Saves the data
+    def save(self, path=None):
+        if path is not None:
+            self.save_path = path
+
+        with open(self.save_path, "w") as file:
+            json.dump(self.scene_graph_to_dict(self.scene_root), file)
+
+    # Processes the scene graph and returns a dict representation
+    def scene_graph_to_dict(self, node):
+        curr_dict = {}
+        curr_dict["name"] = node.name
+        curr_dict["components"] = [component.to_dict() for component in node.data]
+
+        child_list = []
+        for child in node.children:
+            child_list.append(self.scene_graph_to_dict(child))
+
+        curr_dict["children"] = child_list
+        return curr_dict
