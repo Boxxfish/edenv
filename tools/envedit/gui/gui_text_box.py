@@ -20,6 +20,7 @@ class GUITextBox(GUIFrame):
         self.bg_color = (1, 1, 1, 0.2)
         self.text_size = 12
         self.frame = None
+        self.on_text_changed = None
 
     def set_text(self, text):
         self.text = text
@@ -45,6 +46,7 @@ class GUITextBox(GUIFrame):
                                  text_fg=self.text_color,
                                  frameColor=self.bg_color,
                                  text_font=self.font,
+                                 focusOutCommand=self.focus_out_handler,
                                  scale=(self.text_size * 2.5) / (GUIUtils.square_size + 1))
         if self.child is not None:
             self.child.add_render()
@@ -57,3 +59,9 @@ class GUITextBox(GUIFrame):
         self.frame.destroy()
         self.frame = None
         self.update()
+
+    # Handles focus exit
+    def focus_out_handler(self):
+        self.text = self.frame.get()
+        if self.on_text_changed is not None:
+            self.on_text_changed(self.text)
