@@ -34,3 +34,8 @@ class EComponent:
         component_dict["script_path"] = self.script_path
         component_dict["values"] = self.property_vals
         return component_dict
+
+    # Loads the values from a dictionary into itself
+    def load_from_dict(self, component_dict):
+        self.set_script(component_dict["script_path"])
+        self.property_vals = component_dict["values"]
