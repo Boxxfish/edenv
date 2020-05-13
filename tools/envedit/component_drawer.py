@@ -89,6 +89,10 @@ class ComponentDrawer(GUIFrame):
                 property_val = GUITextBox()
                 property_val.set_text("Text")
                 property_layout.add_child(property_val)
+            elif property_type == PropertyType.FILE:
+                property_val = GUITextBox()
+                property_val.set_text("File Name")
+                property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
         self.envedit_data.target_node.data.remove(item.data)

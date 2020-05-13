@@ -11,3 +11,4 @@ class PropertyType(Enum):
     FLOAT = auto()
     BOOL = auto()
     STRING = auto()
+    FILE = auto()
