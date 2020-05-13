@@ -48,7 +48,7 @@ class GUIDockLayout(GUILayout):
         self.left_child.bbox.height = self.bbox.height - (self.top_child.bbox.height + self.bottom_child.bbox.height)
         self.left_child.update()
 
-        self.right_child.bbox.x = self.bbox.width - self.right_child.bbox.width
+        self.right_child.bbox.x = self.bbox.x + self.bbox.width - self.right_child.bbox.width
         self.right_child.bbox.y = self.bbox.y + self.top_child.bbox.height
         self.right_child.bbox.height = self.bbox.height - (self.top_child.bbox.height + self.bottom_child.bbox.height)
         self.right_child.update()

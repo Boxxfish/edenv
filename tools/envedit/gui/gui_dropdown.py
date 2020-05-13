@@ -38,7 +38,6 @@ class GUIDropdown(GUIButton):
             self.child.bbox.height = 24
             self.child.set_bg_color((1, 1, 1, 0.9))
             self.child.set_bg_image("vertical_more.png")
-            print(self.child.bbox.width)
         elif visual == GUIDropdownVisualType.HORIZONTAL:
             self.fit_width_to_content = True
             self.fit_height_to_content = True

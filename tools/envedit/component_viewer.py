@@ -50,7 +50,9 @@ class ComponentViewer(GUIFrame):
     def setup_components(self):
         if self.envedit_data is not None and self.envedit_data.target_node is not None:
             for component in self.envedit_data.target_node.data:
-                self.component_layout.add_child(ComponentDrawer(component))
+                drawer = ComponentDrawer(component)
+                drawer.set_envedit_data(self.envedit_data)
+                self.component_layout.add_child(drawer)
 
     # Clears the component viewer
     def clear_viewer(self):
