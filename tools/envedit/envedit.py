@@ -16,6 +16,8 @@ from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
+from tools.envedit.toolbar import Toolbar
+import tkinter as tk
 
 
 class EnvEdit(ShowBase):
@@ -45,6 +47,10 @@ class EnvEdit(ShowBase):
         window_layout = GUIDockLayout()
         self.gui_system.window.set_child(window_layout)
 
+        # Set up Tkinter (for file dialogs)
+        root = tk.Tk()
+        root.withdraw()
+
         # Set up scene data
         self.envedit_data = EnveditData()
         self.envedit_data.update_callback = self.update_gui
@@ -68,6 +74,11 @@ class EnvEdit(ShowBase):
         window_layout.set_child_dock(self.component_viewer, GUIDockLayout.RIGHT)
         self.component_viewer.set_envedit_data(self.envedit_data)
         self.component_viewer.set_components(config["components"])
+
+        # Add toolbar
+        self.toolbar = Toolbar()
+        window_layout.set_child_dock(self.toolbar, GUIDockLayout.TOP)
+        self.toolbar.set_envedit_data(self.envedit_data)
 
         self.update_gui()
 

@@ -23,6 +23,11 @@ class GraphNode():
         node.parent = None
         self.children.remove(node)
 
+    # Removes all children from this node.
+    def clear(self):
+        for _ in range(len(self.children)):
+            self.remove_child(self.children[0])
+
     # Finds a child node in the graph
     def find_child(self, node):
         if self is node:
