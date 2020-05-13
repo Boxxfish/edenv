@@ -59,9 +59,10 @@ class GUILabel(GUIFrame):
         self.update()
 
     def stop_render(self):
+        if self.rendering:
+            self.frame.destroy()
+            self.frame = None
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.frame.destroy()
-        self.frame = None
         self.update()

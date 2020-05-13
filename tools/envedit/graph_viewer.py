@@ -65,6 +65,7 @@ class GraphViewer(GUIFrame):
 
             # For the root node, just add it to the scene list
             if type(parent) == GUIList:
+                self.scene_list.child.clear()
                 parent.add_item(list_item)
 
             # Expand the parent if it's a collapsed dropdown, and add to the scene list

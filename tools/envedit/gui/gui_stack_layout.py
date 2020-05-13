@@ -47,7 +47,8 @@ class GUIStackLayout(GUILayout):
     # Removes a child from the layout
     def remove_child(self, child):
         child.stop_render()
-        self.children.remove(child)
+        if child in self.children:
+            self.children.remove(child)
         self.update()
 
     # Removes all children from the layout

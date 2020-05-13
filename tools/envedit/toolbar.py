@@ -92,3 +92,5 @@ class Toolbar(GUIFrame):
         # Load file
         if file_path is not "":
             self.envedit_data.load(file_path)
+
+        # TODO: When scene data is loaded, if the dirt flag is set, bring up save dialog
