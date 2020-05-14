@@ -84,7 +84,7 @@ class GUISystem(DirectObject):
 
     # Keystroke event handler
     def handle_keystroke(self, key):
-        if self.focus_component is not None and key in (string.ascii_letters + string.digits + " "):
+        if self.focus_component is not None and key in (string.ascii_letters + string.digits + string.punctuation + " "):
             self.focus_component.handle_keystroke(key)
 
     # Backspace event handler
