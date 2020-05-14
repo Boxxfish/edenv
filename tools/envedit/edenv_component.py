@@ -4,6 +4,7 @@ Components are backed by a script that specifies its properties.
 
 @author Ben Giacalone
 """
+from tools.envedit.property_type import PropertyType
 
 
 class EComponent:
@@ -11,8 +12,22 @@ class EComponent:
     def __init__(self, name="", property_types={}):
         self.name = name
         self.property_types = property_types
-        self.property_vals = None
+        self.property_vals = {}
         self.script_path = None
+
+    # Returns the default value of the field type
+    @staticmethod
+    def get_default_value(property_type):
+        if property_type == PropertyType.INT:
+            return "0"
+        elif property_type == PropertyType.FLOAT:
+            return "0.0"
+        elif property_type == PropertyType.BOOL:
+            return "True"
+        elif property_type == PropertyType.STRING:
+            return "Text"
+        elif property_type == PropertyType.FILE:
+            return "File Path"
 
     # Sets the component's script and its property types
     def set_script(self, script_path):
@@ -27,6 +42,9 @@ class EComponent:
         # Set properties of EComponent
         self.name = module_name
         self.property_types = component_class.get_properties()
+        self.property_vals = {}
+        for property in self.property_types:
+            self.property_vals[property] = EComponent.get_default_value(self.property_types[property])
 
     # Returns a dictionary with the values of the component
     def to_dict(self):

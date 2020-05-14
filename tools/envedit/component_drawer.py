@@ -54,44 +54,30 @@ class ComponentDrawer(GUIFrame):
 
     # Sets up the component drawer
     def setup_drawer(self):
-        for property in self.component.property_types:
-            property_type = self.component.property_types[property]
+        if self.component is not None:
+            for property in self.component.property_types:
+                property_type = self.component.property_types[property]
 
-            property_frame = GUIFrame()
-            property_frame.bbox.height = 30
-            property_frame.padding = 4
-            self.properties_layout.add_child(property_frame)
+                property_frame = GUIFrame()
+                property_frame.bbox.height = 30
+                property_frame.padding = 4
+                self.properties_layout.add_child(property_frame)
 
-            property_layout = GUIStackLayout(vertical=False)
-            property_frame.set_child(property_layout)
+                property_layout = GUIStackLayout(vertical=False)
+                property_frame.set_child(property_layout)
 
-            property_name = GUILabel()
-            property_name.set_text(property + ":")
-            property_layout.add_child(property_name)
+                property_name = GUILabel()
+                property_name.set_text(property + ":")
+                property_layout.add_child(property_name)
 
-            spacer = GUIComponent()
-            spacer.bbox.width = 20
-            property_layout.add_child(spacer)
+                spacer = GUIComponent()
+                spacer.bbox.width = 20
+                property_layout.add_child(spacer)
 
-            if property_type == PropertyType.INT:
                 property_val = GUITextBox()
-                property_val.set_text("0")
-                property_layout.add_child(property_val)
-            elif property_type == PropertyType.FLOAT:
-                property_val = GUITextBox()
-                property_val.set_text("0.0")
-                property_layout.add_child(property_val)
-            elif property_type == PropertyType.BOOL:
-                property_val = GUITextBox()
-                property_val.set_text("True")
-                property_layout.add_child(property_val)
-            elif property_type == PropertyType.STRING:
-                property_val = GUITextBox()
-                property_val.set_text("Text")
-                property_layout.add_child(property_val)
-            elif property_type == PropertyType.FILE:
-                property_val = GUITextBox()
-                property_val.set_text("File Name")
+                property_val.data = property
+                property_val.set_text(self.component.property_vals[property])
+                property_val.on_text_changed = self.text_changed_handler
                 property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
@@ -100,3 +86,7 @@ class ComponentDrawer(GUIFrame):
 
     def set_envedit_data(self, data):
         self.envedit_data = data
+
+    # Handles a property being changed
+    def text_changed_handler(self, text_box):
+        self.component.property_vals[text_box.data] = text_box.text
