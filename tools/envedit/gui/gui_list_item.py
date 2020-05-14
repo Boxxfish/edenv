@@ -4,6 +4,7 @@ Represents an item in a GUIList.
 @author Ben Giacalone
 """
 from tools.envedit.gui.gui_frame import GUIFrame
+from tools.envedit.gui.gui_system import GUISystem
 
 
 class GUIListItem(GUIFrame):
@@ -46,6 +47,7 @@ class GUIListItem(GUIFrame):
         self.list_container.set_selected_item(self)
         if self.select_callback is not None:
             self.select_callback(self)
+        GUISystem.set_focus(self)
 
     # Deselects this item
     def deselect(self):

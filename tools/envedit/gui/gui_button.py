@@ -4,6 +4,7 @@ A button that triggers a callback when clicked.
 @author Ben Giacalone
 """
 from tools.envedit.gui.gui_frame import GUIFrame
+from tools.envedit.gui.gui_system import GUISystem
 
 
 class GUIButton(GUIFrame):
@@ -35,6 +36,7 @@ class GUIButton(GUIFrame):
         self.set_bg_color(self.pressed_color)
         if self.on_click is not None:
             self.on_click(self)
+        GUISystem.set_focus(self)
 
     def handle_left_released(self):
         self.set_bg_color(self.hover_color)

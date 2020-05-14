@@ -3,68 +3,120 @@ A text box that accepts typed text.
 
 @author Ben Giacalone
 """
-from direct.gui.DirectEntry import DirectEntry
-
 from tools.envedit.gui.gui_frame import GUIFrame
+from tools.envedit.gui.gui_label import GUILabel
+from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
-from tools.envedit.gui.panda_gui_utils import GUIUtils
 
 
 class GUITextBox(GUIFrame):
 
     def __init__(self):
         GUIFrame.__init__(self)
+        self.cursor_pos = 0
+        self.focused = False
+        self.bbox.height = 20
+        self.bbox.width = 100
+        self.padding = 4
         self.text = ""
-        self.font = GUISystem.get_font("default")
-        self.text_color = (1, 1, 1, 1)
-        self.bg_color = (1, 1, 1, 0.2)
-        self.text_size = 12
-        self.frame = None
+        self.normal_color = (1, 1, 1, 0.2)
+        self.focus_color = (1, 1, 1, 0.3)
+        self.set_bg_color(self.normal_color)
+
+        self.use_single_label()
+
         self.on_text_changed = None
+        self.on_lost_focus = None
         self.data = None
+
+    def update(self):
+        # This is more complicated than it should be... figure out why we can't just check for self.focused
+        if self.focused and self.child is not None and len(self.child.children) > 0:
+            self.child.children[0].set_text(self.text[:self.cursor_pos])
+            self.child.children[2].set_text(self.text[self.cursor_pos:])
+
+        GUIFrame.update(self)
+
+    # Sets the child element to a single text label
+    def use_single_label(self):
+        if self.child is not None:
+            self.remove_child()
+        self.set_child(GUILabel())
+        self.child.receive_events = False
+        self.child.set_text(self.text)
+        self.update()
+
+    # Sets the child element to a stack of text labels (for rendering the cursor)
+    def use_stacked_labels(self):
+        if self.child is not None:
+            self.remove_child()
+        self.set_child(GUIStackLayout(vertical=False))
+        self.child.bbox.height = self.bbox.height
+
+        first_label = GUILabel()
+        first_label.receive_events = False
+        self.child.add_child(first_label)
+
+        cursor = GUIFrame()
+        cursor.bbox.width = 1
+        cursor.set_bg_color((1, 1, 1, 1))
+        cursor.receive_events = False
+        self.child.add_child(cursor)
+
+        second_label = GUILabel()
+        second_label.receive_events = False
+        self.child.add_child(second_label)
+
+        self.update()
 
     def set_text(self, text):
         self.text = text
+        if self.focused:
+            self.child.children[0].set_text(self.text[:self.cursor_pos])
+            self.child.children[2].set_text(self.text[self.cursor_pos:])
+        else:
+            self.child.set_text(self.text)
 
-    def update(self):
-        if self.rendering:
-            self.frame.initialText = self.text
-            self.frame["text_fg"] = self.text_color
-            self.frame["frameColor"] = self.bg_color
-            self.frame.entryFont = self.font
-            bounds = self.frame.getBounds()
-            scale = (self.text_size * 2.5) / (GUIUtils.square_size + 1)
-            self.bbox.width, self.bbox.height = GUIUtils.get_screen_space_size((bounds[1] - bounds[0]) * scale,
-                                                                               (bounds[3] - bounds[2]) * scale)
-            x, y, width, height = GUIUtils.get_panda_text_coords(self.bbox.x, self.bbox.y, self.bbox.width,
-                                                                 self.bbox.height)
-            self.frame.setPos(x, 0, y)
-            self.frame.setScale(scale)
+    def handle_left_pressed(self):
+        self.cursor_pos = len(self.text)
+        self.focused = True
+        self.use_stacked_labels()
+        self.set_bg_color(self.focus_color)
+        GUISystem.set_focus(self)
 
-    def add_render(self):
-        self.rendering = True
-        self.frame = DirectEntry(initialText=self.text,
-                                 text_fg=self.text_color,
-                                 frameColor=self.bg_color,
-                                 text_font=self.font,
-                                 focusOutCommand=self.focus_out_handler,
-                                 scale=(self.text_size * 2.5) / (GUIUtils.square_size + 1))
-        if self.child is not None:
-            self.child.add_render()
-        self.update()
+    def handle_lost_focus(self):
+        self.focused = False
+        self.use_single_label()
+        self.set_bg_color(self.normal_color)
+        if self.on_lost_focus is not None:
+            self.on_lost_focus(self)
 
-    def stop_render(self):
-        if self.rendering:
-            self.frame.destroy()
-            self.frame = None
-        self.rendering = False
-        if self.child is not None:
-            self.child.stop_render()
-        self.update()
+    def handle_keystroke(self, key):
+        self.set_text(self.text[:self.cursor_pos] + key + self.text[self.cursor_pos:])
+        self.cursor_pos += 1
+        if self.on_text_changed is not None:
+            self.on_text_changed(self)
 
-    # Handles focus exit
-    def focus_out_handler(self):
-        should_trigger = self.text != self.frame.get()
-        self.text = self.frame.get()
-        if should_trigger and self.on_text_changed is not None:
+    def handle_special_key(self, key):
+        if key == "backspace":
+            if self.cursor_pos != 0:
+                self.set_text(self.text[:self.cursor_pos - 1] + self.text[self.cursor_pos:])
+                self.cursor_pos -= 1
+                self.update()
+        elif key == "arrow_left":
+            if self.cursor_pos != 0:
+                self.cursor_pos -= 1
+                self.update()
+        elif key == "arrow_right":
+            if self.cursor_pos != len(self.text):
+                self.cursor_pos += 1
+                self.update()
+        elif key == "delete":
+            if self.cursor_pos != len(self.text):
+                self.set_text(self.text[:self.cursor_pos] + self.text[self.cursor_pos + 1:])
+                self.update()
+        elif key == "enter":
+            GUISystem.release_focus()
+
+        if self.on_text_changed is not None:
             self.on_text_changed(self)

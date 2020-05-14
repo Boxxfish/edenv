@@ -11,7 +11,6 @@ from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_text_box import GUITextBox
-from tools.envedit.property_type import PropertyType
 
 
 class ComponentDrawer(GUIFrame):
@@ -77,7 +76,7 @@ class ComponentDrawer(GUIFrame):
                 property_val = GUITextBox()
                 property_val.data = property
                 property_val.set_text(self.component.property_vals[property])
-                property_val.on_text_changed = self.text_changed_handler
+                property_val.on_text_changed = self.text_change_handler
                 property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
@@ -88,8 +87,8 @@ class ComponentDrawer(GUIFrame):
     def set_envedit_data(self, data):
         self.envedit_data = data
 
-    # Handles a property being changed
-    def text_changed_handler(self, text_box):
+    # Handles the text change
+    def text_change_handler(self, text_box):
         self.component.property_vals[text_box.data] = text_box.text
         self.envedit_data.modify()
         self.envedit_data.update()

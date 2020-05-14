@@ -72,6 +72,3 @@ class GUIFrame(GUIComponent):
         if self.child is not None:
             self.child.stop_render()
         self.update()
-
-
-

@@ -22,6 +22,12 @@ class GUIComponent:
             self.child.add_render()
         self.update()
 
+    # Removes the child of the component
+    def remove_child(self):
+        self.child.stop_render()
+        self.child = None
+        self.update()
+
     # Updates the component after a change
     def update(self):
         if self.child is not None:
@@ -72,3 +78,14 @@ class GUIComponent:
     def handle_cursor_exit(self):
         pass
 
+    # Handles a key being pressed while focused
+    def handle_keystroke(self, key):
+        pass
+
+    # Handles a special key (backspace, arrow keys, etc) being pressed while focused
+    def handle_special_key(self, key):
+        pass
+
+    # Handles the component losing focus
+    def handle_lost_focus(self):
+        pass

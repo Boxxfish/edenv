@@ -3,6 +3,8 @@ EDEnv's GUI manager.
 
 @author Ben Giacalone
 """
+import string
+
 from direct.showbase.DirectObject import DirectObject
 from direct.task import Task
 
@@ -26,6 +28,13 @@ class GUISystem(DirectObject):
         self.accept("mouse1-up", self.handle_left_mouse_released)
         self.accept("mouse3", self.handle_right_mouse_pressed)
         self.accept("mouse3-up", self.handle_right_mouse_released)
+        self.base.buttonThrowers[0].node().setKeystrokeEvent("keystroke")
+        self.accept("keystroke", self.handle_keystroke)
+        self.accept("backspace", self.handle_backspace)
+        self.accept("arrow_left", self.handle_arrow_left)
+        self.accept("arrow_right", self.handle_arrow_right)
+        self.accept("delete", self.handle_delete)
+        self.accept("enter", self.handle_enter)
 
         # Update GUIUtils
         GUIUtils.window_width = self.base.win.getXSize()
@@ -35,6 +44,7 @@ class GUISystem(DirectObject):
         self.window = GUIWindow()
         self.window.add_render()
         self.target_component = self.window     # the target is the component the cursor is currently over
+        self.focus_component = self.window      # the focus component is the component that's currently focused
 
         # Set up mouse polling
         self.cursor_x = 0
@@ -71,6 +81,36 @@ class GUISystem(DirectObject):
     def handle_right_mouse_released(self):
         if self.target_component is not None:
             self.target_component.handle_right_released()
+
+    # Keystroke event handler
+    def handle_keystroke(self, key):
+        if self.focus_component is not None and key in (string.ascii_letters + string.digits + " "):
+            self.focus_component.handle_keystroke(key)
+
+    # Backspace event handler
+    def handle_backspace(self):
+        if self.focus_component is not None:
+            self.focus_component.handle_special_key("backspace")
+
+    # Left arrow key event handler
+    def handle_arrow_left(self):
+        if self.focus_component is not None:
+            self.focus_component.handle_special_key("arrow_left")
+
+    # Right arrow key event handler
+    def handle_arrow_right(self):
+        if self.focus_component is not None:
+            self.focus_component.handle_special_key("arrow_right")
+
+    # Delete key event handler
+    def handle_delete(self):
+        if self.focus_component is not None:
+            self.focus_component.handle_special_key("delete")
+
+    # Enter key event handler
+    def handle_enter(self):
+        if self.focus_component is not None:
+            self.focus_component.handle_special_key("enter")
 
     # Cursor position polling task
     def poll_cursor(self, task):
@@ -126,3 +166,15 @@ class GUISystem(DirectObject):
     @staticmethod
     def close_context_menu():
         GUISystem.gui_system.window.context_menu_layer.clear()
+
+    # Sets the current focused component
+    @staticmethod
+    def set_focus(component):
+        if GUISystem.gui_system.focus_component is not component:
+            GUISystem.gui_system.focus_component.handle_lost_focus()
+        GUISystem.gui_system.focus_component = component
+
+    # Sets the current focused component to the window
+    @staticmethod
+    def release_focus():
+        GUISystem.set_focus(GUISystem.gui_system.window)
