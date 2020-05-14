@@ -6,7 +6,7 @@ Environment editor for EDEnv.
 from pathlib import Path
 import sys
 import yaml
-from direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBase import ShowBase, WindowProperties
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.floor_node import FloorNode
@@ -29,6 +29,11 @@ class EnvEdit(ShowBase):
         self.disableMouse()
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)
 
+        # Set up scene data
+        self.envedit_data = EnveditData()
+        self.envedit_data.update_callback = self.update_gui
+        self.envedit_data.scene_root = GraphNode("Scene Root", [])
+
         # Read the project config file
         config_path = Path("project.yaml")
         config = None
@@ -37,6 +42,7 @@ class EnvEdit(ShowBase):
             return
         with open("project.yaml", "r") as file:
             config = yaml.load(file, Loader=yaml.FullLoader)
+            self.envedit_data.project_name = config["project"]
 
         # Set up GUI system
         self.gui_system = GUISystem(self)
@@ -50,11 +56,6 @@ class EnvEdit(ShowBase):
         # Set up Tkinter (for file dialogs)
         root = tk.Tk()
         root.withdraw()
-
-        # Set up scene data
-        self.envedit_data = EnveditData()
-        self.envedit_data.update_callback = self.update_gui
-        self.envedit_data.scene_root = GraphNode("Scene Root", [])
 
         # Add floor
         self.floor_node = FloorNode(self)
@@ -84,8 +85,19 @@ class EnvEdit(ShowBase):
 
     # Updates the GUI after a change to the scene
     def update_gui(self):
+        # Update scene graph viewer and component viewer
         self.graph_viewer.update_viewer()
         self.component_viewer.update_viewer()
+
+        # Update window title
+        dirty_marker = "*" if self.envedit_data.dirty else ""
+        window_properties = WindowProperties()
+        if self.envedit_data.save_path is not None:
+            window_properties.setTitle(f"{dirty_marker}{Path(self.envedit_data.save_path).name} | {self.envedit_data.project_name}")
+        else:
+            window_properties.setTitle(f"{dirty_marker}new_scene | {self.envedit_data.project_name}")
+        self.win.requestProperties(window_properties)
+
 
 if __name__ == "__main__":
     app = EnvEdit()

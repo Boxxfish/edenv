@@ -16,6 +16,7 @@ class EnveditData:
         self.target_node = None
         self.dirty = True                          # if the data was changed since saving
         self.save_path = None
+        self.project_name = None
         self.update_callback = None
 
     # Updates the GUI after any change
@@ -35,6 +36,7 @@ class EnveditData:
         with open(self.save_path, "w") as file:
             json.dump(self.scene_graph_to_dict(self.scene_root), file)
 
+        self.dirty = False
         self.update()
 
     # Loads the data
@@ -45,6 +47,7 @@ class EnveditData:
             file_json = json.load(file)
             self.scene_root = self.dict_to_scene_graph(file_json)
 
+        self.dirty = False
         self.update()
 
     # Processes the scene graph and returns a dict representation

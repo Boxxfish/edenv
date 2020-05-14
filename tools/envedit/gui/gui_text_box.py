@@ -54,15 +54,17 @@ class GUITextBox(GUIFrame):
         self.update()
 
     def stop_render(self):
+        if self.rendering:
+            self.frame.destroy()
+            self.frame = None
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.frame.destroy()
-        self.frame = None
         self.update()
 
     # Handles focus exit
     def focus_out_handler(self):
+        should_trigger = self.text != self.frame.get()
         self.text = self.frame.get()
-        if self.on_text_changed is not None:
+        if should_trigger and self.on_text_changed is not None:
             self.on_text_changed(self)

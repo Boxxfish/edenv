@@ -85,4 +85,5 @@ class ComponentViewer(GUIFrame):
         component = EComponent()
         component.set_script(item.data)
         self.envedit_data.target_node.data.append(component)
+        self.envedit_data.modify()
         self.envedit_data.update()

@@ -149,6 +149,7 @@ class GraphViewer(GUIFrame):
         item.data.data.add_child(new_node)
 
         # Update model
+        self.envedit_data.modify()
         self.envedit_data.update()
 
     # Handles the "delete node" option being selected
@@ -157,4 +158,5 @@ class GraphViewer(GUIFrame):
         item.data.data.parent.remove_child(item.data.data)
 
         # Update model
+        self.envedit_data.modify()
         self.envedit_data.update()
