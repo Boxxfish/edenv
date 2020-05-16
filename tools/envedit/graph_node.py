@@ -3,6 +3,7 @@ Represents a graph node for EDEnv's internal scene graph representation.
 
 @author Ben Giacalone
 """
+from tools.envedit.edenv_component import EComponent
 
 
 class GraphNode():
@@ -45,3 +46,43 @@ class GraphNode():
             result = child.find_child(name)
             if child is not None:
                 return child
+
+    # Processes the scene graph and returns a dict representation
+    @staticmethod
+    def scene_graph_to_dict(node):
+        curr_dict = {}
+        curr_dict["name"] = node.name
+        curr_dict["components"] = [component.to_dict() for component in node.data]
+
+        child_list = []
+        for child in node.children:
+            child_list.append(GraphNode.scene_graph_to_dict(child))
+
+        curr_dict["children"] = child_list
+        return curr_dict
+
+    # Processes the file dictionary and returns the corresponding graph node
+    @staticmethod
+    def dict_to_scene_graph(node_dict):
+        node = GraphNode()
+        node.name = node_dict["name"]
+        node.data = []
+        for component_dict in node_dict["components"]:
+            component = EComponent()
+            component.load_from_dict(component_dict)
+            node.data.append(component)
+
+        for child in node_dict["children"]:
+            node.add_child(GraphNode.dict_to_scene_graph(child))
+
+        return node
+
+    # Returns a dict representation of a node and its children
+    @staticmethod
+    def node_to_dict(node):
+        return GraphNode.scene_graph_to_dict(node)
+
+    # Returns a node representation of this dictionary
+    @staticmethod
+    def dict_to_node(dictionary):
+        return GraphNode.dict_to_scene_graph(dictionary)
