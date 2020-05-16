@@ -76,13 +76,3 @@ class GraphNode():
             node.add_child(GraphNode.dict_to_scene_graph(child))
 
         return node
-
-    # Returns a dict representation of a node and its children
-    @staticmethod
-    def node_to_dict(node):
-        return GraphNode.scene_graph_to_dict(node)
-
-    # Returns a node representation of this dictionary
-    @staticmethod
-    def dict_to_node(dictionary):
-        return GraphNode.dict_to_scene_graph(dictionary)
