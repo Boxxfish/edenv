@@ -51,8 +51,9 @@ class ColladaImporter:
                         for coord in vertex:
                             vertex_list.append(coord.item())
                     for texcoord in tri.texcoords:
-                        for coord in texcoord[0]:
-                            texcoords_list.append(coord.item())
+                        for coord in texcoord:
+                            texcoords_list.append(coord[0].item())
+                            texcoords_list.append(coord[1].item())
                     for normal in tri.normals:
                         for coord in normal:
                             normals_list.append(coord.item())
