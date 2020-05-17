@@ -14,6 +14,7 @@ class EComponent:
         self.property_types = property_types
         self.property_vals = {}
         self.script_path = None
+        self.component_class = None
 
     # Returns the default value of the field type
     @staticmethod
@@ -37,14 +38,15 @@ class EComponent:
         module_name = script_path.split(".")[-1].title()
         module_name = module_name.replace("_", "")
         module = __import__(script_path, fromlist=[module_name])
-        component_class = getattr(module, module_name)
+        self.component_class = getattr(module, module_name)
 
         # Set properties of EComponent
         self.name = module_name
-        self.property_types = component_class.get_properties()
+        self.property_types = self.component_class.get_properties()
         self.property_vals = {}
         for property in self.property_types:
             self.property_vals[property] = EComponent.get_default_value(self.property_types[property])
+        self.property_changed()
 
     # Returns a dictionary with the values of the component
     def to_dict(self):
@@ -57,3 +59,12 @@ class EComponent:
     def load_from_dict(self, component_dict):
         self.set_script(component_dict["script_path"])
         self.property_vals = component_dict["values"]
+
+    # Called when a property value has changed
+    def property_changed(self):
+        if self.component_class is not None:
+            self.component_class.on_render(self, self.property_vals)
+
+    # Called when the component must be visualized
+    def on_render(self, properties):
+        pass

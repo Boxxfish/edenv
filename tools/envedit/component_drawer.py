@@ -90,5 +90,6 @@ class ComponentDrawer(GUIFrame):
     # Handles the text change
     def text_change_handler(self, text_box):
         self.component.property_vals[text_box.data] = text_box.text
+        self.component.property_changed()
         self.envedit_data.modify()
         self.envedit_data.update()

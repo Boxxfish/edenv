@@ -17,6 +17,10 @@ class MeshGraphic(EComponent):
     def get_properties():
         return {"mesh": PropertyType.FILE}
 
+    # Called when the component must be visualized
+    def on_render(self, properties):
+        pass
+
     # Called when the scene starts
     def start(self, properties):
         self.mesh = properties["mesh"]
