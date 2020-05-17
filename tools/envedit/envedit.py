@@ -6,9 +6,10 @@ Environment editor for EDEnv.
 from pathlib import Path
 import sys
 import yaml
-from direct.showbase.ShowBase import ShowBase, WindowProperties
+from direct.showbase.ShowBase import ShowBase, WindowProperties, PandaNode
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
+from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
@@ -28,6 +29,7 @@ class EnvEdit(ShowBase):
         # Initial scene setup
         self.disableMouse()
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)
+        EComponent.panda_root_node = self.render.attach_new_node(PandaNode("Root"))
 
         # Set up scene data
         self.envedit_data = EnveditData()

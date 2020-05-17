@@ -8,6 +8,7 @@ from tools.envedit.property_type import PropertyType
 
 
 class EComponent:
+    panda_root_node = None
 
     def __init__(self, name="", property_types={}):
         self.name = name
@@ -59,6 +60,7 @@ class EComponent:
     def load_from_dict(self, component_dict):
         self.set_script(component_dict["script_path"])
         self.property_vals = component_dict["values"]
+        self.property_changed()
 
     # Called when a property value has changed
     def property_changed(self):
