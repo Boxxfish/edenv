@@ -9,12 +9,14 @@ from tools.envedit.transform import Transform
 
 class GraphNode:
 
-    def __init__(self, name="", data=None):
+    def __init__(self, name="", data=[]):
+        self.transform = Transform()
         self.children = []
         self.parent = None
         self.data = data
+        for component in data:
+            component.node = self
         self.name = name
-        self.transform = Transform()
 
     # Adds a child node to this node.
     def add_child(self, node):
@@ -25,6 +27,16 @@ class GraphNode:
     def remove_child(self, node):
         node.parent = None
         self.children.remove(node)
+
+    # Adds a component to the node
+    def add_component(self, component):
+        component.node = self
+        self.data.append(component)
+
+    # Removes a component from the node
+    def remove_component(self, component):
+        component.node = None
+        self.data.remove(component)
 
     # Removes all children from this node.
     def clear(self):
@@ -70,11 +82,13 @@ class GraphNode:
         node = GraphNode()
         node.name = node_dict["name"]
         node.data = []
-        node.transform = Transform().load_from_dict(node_dict["transform"])
+        transform = Transform()
+        transform.load_from_dict(node_dict["transform"])
+        node.transform = transform
         for component_dict in node_dict["components"]:
             component = EComponent()
             component.load_from_dict(component_dict)
-            node.data.append(component)
+            node.add_component(component)
 
         for child in node_dict["children"]:
             node.add_child(GraphNode.dict_to_scene_graph(child))

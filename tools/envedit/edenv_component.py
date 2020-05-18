@@ -15,6 +15,7 @@ class EComponent:
         self.name = name
         self.property_types = property_types
         self.property_vals = {}
+        self.node = None
         self.script_path = None
         self.component_class = None
 

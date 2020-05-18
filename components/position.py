@@ -2,6 +2,7 @@
 Represents the world space position of this model.
 
 """
+import numpy as np
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.property_type import PropertyType
 
@@ -21,7 +22,9 @@ class Position(EComponent):
 
     # Called when component property is changed
     def on_gui_change(self, properties):
-        pass
+        # Update transform
+        if self.node is not None:
+            self.node.transform.set_translation(np.array([float(properties["x"]), float(properties["y"]), float(properties["z"])]))
 
     # Called when the scene starts
     def start(self, properties):

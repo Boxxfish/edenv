@@ -80,7 +80,7 @@ class ComponentDrawer(GUIFrame):
                 property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
-        self.envedit_data.target_node.data.remove(item.data)
+        self.envedit_data.target_node.add_component(item.data)
         self.envedit_data.modify()
         self.envedit_data.update()
 
