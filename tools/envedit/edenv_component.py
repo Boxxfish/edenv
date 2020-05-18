@@ -9,6 +9,7 @@ from tools.envedit.property_type import PropertyType
 
 class EComponent:
     panda_root_node = None
+    base = None
 
     def __init__(self, name="", property_types={}):
         self.name = name

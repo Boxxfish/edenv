@@ -30,6 +30,7 @@ class EnvEdit(ShowBase):
         self.disableMouse()
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)
         EComponent.panda_root_node = self.render.attach_new_node(PandaNode("Root"))
+        EComponent.base = self
 
         # Set up scene data
         self.envedit_data = EnveditData()
