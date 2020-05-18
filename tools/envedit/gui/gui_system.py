@@ -31,9 +31,13 @@ class GUISystem(DirectObject):
         self.base.buttonThrowers[0].node().setKeystrokeEvent("keystroke")
         self.accept("keystroke", self.handle_keystroke)
         self.accept("backspace", self.handle_backspace)
+        self.accept("backspace-repeat", self.handle_backspace)
         self.accept("arrow_left", self.handle_arrow_left)
+        self.accept("arrow_left-repeat", self.handle_arrow_left)
         self.accept("arrow_right", self.handle_arrow_right)
+        self.accept("arrow_right-repeat", self.handle_arrow_right)
         self.accept("delete", self.handle_delete)
+        self.accept("delete-repeat", self.handle_delete)
         self.accept("enter", self.handle_enter)
 
         # Update GUIUtils
