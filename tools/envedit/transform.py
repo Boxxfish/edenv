@@ -4,7 +4,7 @@ Represents a transform matrix.
 @author Ben Giacalone
 """
 import numpy as np
-from math import cos, sin
+from math import cos, sin, atan2, sqrt
 
 
 class Transform:
@@ -16,50 +16,82 @@ class Transform:
         self.rot = np.array([0, 0, 0])
         self.scale = np.array([1, 1, 1])
 
+    # Sets the matrix of the transform and sets its transform properties
     def set_matrix(self, matrix):
         self.matrix = matrix
+        temp_mat = self.matrix.copy()
 
+        # Get translation
+        self.trans = np.array([temp_mat[0][3], temp_mat[1][3], temp_mat[2][3]])
+        temp_mat[0][3] = 0
+        temp_mat[1][3] = 0
+        temp_mat[2][3] = 0
+
+        # Get scale
+        self.scale = np.array([np.linalg.norm(np.array([temp_mat[0][0], temp_mat[1][0], temp_mat[2][0]])),
+                               np.linalg.norm(np.array([temp_mat[0][1], temp_mat[1][1], temp_mat[2][1]])),
+                               np.linalg.norm(np.array([temp_mat[0][2], temp_mat[1][2], temp_mat[2][2]]))])
+
+        # Get rotation
+        temp_mat = temp_mat * np.array([[1 / self.scale[0], 0, 0, 0],
+                                        [0, 1 / self.scale[1], 0, 0],
+                                        [0, 0, 1 / self.scale[2], 0],
+                                        [0, 0, 0, 1]])
+        self.rot = np.array([atan2(temp_mat[2][1], temp_mat[2][2]),
+                             atan2(-temp_mat[2][0], sqrt(pow(temp_mat[2][1], 2) + pow(temp_mat[2][2], 2))),
+                             atan2(temp_mat[1][0], temp_mat[0][0])])
+
+    # Returns the translation matrix of the translation vector
+    def get_trans_mat(self, trans):
+        return np.array([[1, 0, 0, trans[0]],
+                         [0, 1, 0, trans[1]],
+                         [0, 0, 1, trans[2]],
+                         [0, 0, 0, 1]])
+
+    # Returns the rotation matrix of the euler rotation vector
+    def get_rot_mat(self, rot):
+        x_rot_mat = np.array([[1, 0, 0, 0],
+                              [0, cos(rot[0]), -sin(rot[0]), 0],
+                              [0, 0, sin(rot[0]), 0],
+                              [0, 0, 0, 1]])
+        y_rot_mat = np.array([[cos(rot[1]), 0, sin(rot[1]), 0],
+                              [0, 1, 0, 0],
+                              [-sin(rot[1]), 0, cos(rot[1]), 0],
+                              [0, 0, 0, 1]])
+        z_rot_mat = np.array([[cos(rot[2]), -sin(rot[2]), 0, 0],
+                              [sin(rot[2]), cos(rot[2]), 0, 0],
+                              [0, 0, 1, 0],
+                              [0, 0, 0, 1]])
+        return z_rot_mat * y_rot_mat * x_rot_mat
+
+    # Returns the scale matrix of the scale vector
+    def get_scale_mat(self, scale):
+        return np.array([[self.scale[0], 0, 0, 0],
+                         [0, self.scale[1], 0, 0],
+                         [0, 0, self.scale[2], 0],
+                         [0, 0, 0, 1]])
+
+    # Sets the translation of the transform
     def set_translation(self, translation):
         self.trans = translation
         self.dirty = True
 
+    # Sets the rotation of the transform
     def set_rotation(self, rotation):
         self.rot = rotation
         self.dirty = True
 
+    # Sets the scale of the transform
     def set_scale(self, scale):
         self.scale = scale
         self.dirty = True
 
+    # Recalculates the internal matrix from transform properties
     def recalculate(self):
-        # Obtain scale matrix
-        scale_mat = np.array([[self.scale[0], 0, 0, 0],
-                              [0, self.scale[1], 0, 0],
-                              [0, 0, self.scale[2], 0],
-                              [0, 0, 0, 1]])
+        scale_mat = self.get_scale_mat(self.scale)
+        rot_mat = self.get_rot_mat(self.rot)
+        trans_mat = self.get_trans_mat(self.trans)
 
-        # Obtain rotation matrix
-        x_rot_mat = np.array([[1, 0, 0, 0],
-                              [0, cos(self.rot[0]), -sin(self.rot[0]), 0],
-                              [0, 0, sin(self.rot[0]), 0],
-                              [0, 0, 0, 1]])
-        y_rot_mat = np.array([[cos(self.rot[1]), 0, sin(self.rot[1]), 0],
-                              [0, 1, 0, 0],
-                              [-sin(self.rot[1]), 0, cos(self.rot[1]), 0],
-                              [0, 0, 0, 1]])
-        z_rot_mat = np.array([[cos(self.rot[2]), -sin(self.rot[2]), 0, 0],
-                              [sin(self.rot[2]), cos(self.rot[2]), 0, 0],
-                              [0, 0, 1, 0],
-                              [0, 0, 0, 1]])
-        rot_mat = z_rot_mat * y_rot_mat * x_rot_mat
-
-        # Obtain translation matrix
-        trans_mat = np.array([[1, 0, 0, self.trans[0]],
-                           [0, 1, 0, self.trans[1]],
-                           [0, 0, 1, self.trans[2]],
-                           [0, 0, 0, 1]])
-
-        # Get new matrix by applying scale, rotation, translation
         self.matrix = trans_mat * rot_mat * scale_mat
 
     # Returns the matrix of the transform
@@ -67,3 +99,18 @@ class Transform:
         if self.dirty:
             self.recalculate()
         return self.matrix
+
+    # Serializes transform to dictionary
+    def to_dict(self):
+        return {
+            "translation": [self.trans[0].item(), self.trans[1].item(), self.trans[2].item()],
+            "rotation": [self.rot[0].item(), self.rot[1].item(), self.rot[2].item()],
+            "scale": [self.scale[0].item(), self.scale[1].item(), self.scale[2].item()]
+        }
+
+    # Deserializes transform from dictionary
+    def load_from_dict(self, dictionary):
+        self.trans = np.array(dictionary["translation"])
+        self.rot = np.array(dictionary["rotation"])
+        self.scale = np.array(dictionary["scale"])
+        self.dirty = True

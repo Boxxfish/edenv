@@ -24,8 +24,8 @@ class MeshGraphic(EComponent):
     def get_properties():
         return {"mesh": PropertyType.FILE}
 
-    # Called when the component must be visualized
-    def on_render(self, properties):
+    # Called when component property is changed
+    def on_gui_change(self, properties):
         # If a geom_node already exists, remove it
         if hasattr(self, "geom_path") and self.geom_path is not None:
             self.geom_path.removeNode()

@@ -19,6 +19,10 @@ class Position(EComponent):
     def get_properties():
         return {"x": PropertyType.FLOAT, "y": PropertyType.FLOAT, "z": PropertyType.FLOAT}
 
+    # Called when component property is changed
+    def on_gui_change(self, properties):
+        pass
+
     # Called when the scene starts
     def start(self, properties):
         self.x = properties["x"]

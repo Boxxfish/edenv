@@ -4,15 +4,17 @@ Represents a graph node for EDEnv's internal scene graph representation.
 @author Ben Giacalone
 """
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.transform import Transform
 
 
-class GraphNode():
+class GraphNode:
 
     def __init__(self, name="", data=None):
         self.children = []
         self.parent = None
         self.data = data
         self.name = name
+        self.transform = Transform()
 
     # Adds a child node to this node.
     def add_child(self, node):
@@ -53,6 +55,7 @@ class GraphNode():
         curr_dict = {}
         curr_dict["name"] = node.name
         curr_dict["components"] = [component.to_dict() for component in node.data]
+        curr_dict["transform"] = node.transform.to_dict()
 
         child_list = []
         for child in node.children:
@@ -67,6 +70,7 @@ class GraphNode():
         node = GraphNode()
         node.name = node_dict["name"]
         node.data = []
+        node.transform = Transform().load_from_dict(node_dict["transform"])
         for component_dict in node_dict["components"]:
             component = EComponent()
             component.load_from_dict(component_dict)
