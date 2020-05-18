@@ -38,6 +38,7 @@ class GraphNode:
     def remove_component(self, component):
         component.node = None
         self.data.remove(component)
+        component.component_removed(component.property_vals)
 
     # Removes all children from this node.
     def clear(self):

@@ -36,6 +36,7 @@ class EnvEdit(ShowBase):
         self.envedit_data = EnveditData()
         self.envedit_data.update_callback = self.update_gui
         self.envedit_data.scene_root = GraphNode("Scene Root", [])
+        self.envedit_data.panda_root_node = EComponent.panda_root_node
 
         # Read the project config file
         config_path = Path("project.yaml")

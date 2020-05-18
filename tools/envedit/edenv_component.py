@@ -69,6 +69,12 @@ class EComponent:
         if self.node is not None and self.component_class is not None:
             self.component_class.on_gui_change(self, self.property_vals)
 
-    # Called when the component must be visualized
+    # Called when the component is removed
+    def component_removed(self, properties):
+        self.component_class.on_gui_remove(self, self.property_vals)
+
     def on_gui_change(self, properties):
+        pass
+
+    def on_gui_remove(self, properties):
         pass

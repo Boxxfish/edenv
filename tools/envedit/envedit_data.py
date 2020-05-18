@@ -18,6 +18,7 @@ class EnveditData:
         self.save_path = None
         self.project_name = None
         self.update_callback = None
+        self.panda_root_node = None
 
     # Updates the GUI after any change
     def update(self):

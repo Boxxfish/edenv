@@ -3,6 +3,8 @@ Envedit's toolbar.
 
 @author Ben Giacalone
 """
+from panda3d.core import NodePath
+
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.gui.gui_dropdown import GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
@@ -91,6 +93,8 @@ class Toolbar(GUIFrame):
 
         # Load file
         if file_path is not "":
+            for child in self.envedit_data.panda_root_node.children:
+                NodePath(child).removeNode()
             self.envedit_data.load(file_path)
 
         # TODO: When scene data is loaded, if the dirt flag is set, bring up save dialog

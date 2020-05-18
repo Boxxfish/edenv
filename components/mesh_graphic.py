@@ -71,6 +71,11 @@ class MeshGraphic(EComponent):
             # Set the transform of the geometry node
             self.geom_path.setPos(self.node.transform.trans[0], self.node.transform.trans[1], self.node.transform.trans[2])
 
+    # Called when the component is removed
+    def on_gui_remove(self, properties):
+        if hasattr(self, "geom_path") and self.geom_path is not None:
+            self.geom_path.removeNode()
+
     # Called when the scene starts
     def start(self, properties):
         self.mesh = properties["mesh"]
