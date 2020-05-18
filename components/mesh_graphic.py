@@ -68,6 +68,9 @@ class MeshGraphic(EComponent):
             geom_node.addGeom(geom, state)
             self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
 
+            # Set the transform of the geometry node
+            self.geom_path.setPos(self.node.transform.trans[0], self.node.transform.trans[1], self.node.transform.trans[2])
+
     # Called when the scene starts
     def start(self, properties):
         self.mesh = properties["mesh"]

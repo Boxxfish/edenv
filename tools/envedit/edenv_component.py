@@ -66,7 +66,7 @@ class EComponent:
 
     # Called when a property value has changed
     def property_changed(self):
-        if self.component_class is not None:
+        if self.node is not None and self.component_class is not None:
             self.component_class.on_gui_change(self, self.property_vals)
 
     # Called when the component must be visualized

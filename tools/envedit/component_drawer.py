@@ -80,7 +80,7 @@ class ComponentDrawer(GUIFrame):
                 property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
-        self.envedit_data.target_node.add_component(item.data)
+        self.envedit_data.target_node.remove_component(item.data)
         self.envedit_data.modify()
         self.envedit_data.update()
 
@@ -90,6 +90,6 @@ class ComponentDrawer(GUIFrame):
     # Handles the text change
     def text_change_handler(self, text_box):
         self.component.property_vals[text_box.data] = text_box.text
-        self.component.property_changed()
+        self.component.node.component_property_changed()
         self.envedit_data.modify()
         self.envedit_data.update()
