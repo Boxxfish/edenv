@@ -4,6 +4,8 @@ Handles importing and exporting Collada files.
 @author Ben Giacalone
 """
 import json
+import shutil
+from pathlib import Path
 
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
@@ -24,10 +26,13 @@ class ColladaImporter:
         collada_file = Collada(file)
         scene = collada_file.scene
 
-        # Extract textures
+        # Export textures
         mat_map = {}
+        model_folder_path = Path(file.name).parent
         for material in collada_file.materials:
-            mat_map[material.effect.id] = material.effect.diffuse.sampler.surface.image.path
+            mat_path = model_folder_path / Path(material.effect.diffuse.sampler.surface.image.path)
+            shutil.copy(mat_path, resources_path / mat_path.name)
+            mat_map[material.effect.id] = mat_path.name
 
         # Export meshes
         for geometry in collada_file.geometries:
