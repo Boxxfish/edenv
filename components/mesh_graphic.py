@@ -44,14 +44,16 @@ class MeshGraphic(EComponent):
             tex.setMinfilter(SamplerState.FT_nearest)
 
             # Set up vertex data
-            vdata = GeomVertexData(self.mesh + "_vdata", GeomVertexFormat.get_v3t2(), Geom.UHStatic)
+            vdata = GeomVertexData(self.mesh + "_vdata", GeomVertexFormat.get_v3n3t2(), Geom.UHStatic)
             vcount = len(mesh_json["vertices"]) // 3
             vdata.setNumRows(vcount)
             vertex = GeomVertexWriter(vdata, "vertex")
+            normal = GeomVertexWriter(vdata, "normal")
             texcoord = GeomVertexWriter(vdata, "texcoord")
 
             for i in range(vcount):
                 vertex.addData3(mesh_json["vertices"][3 * i], mesh_json["vertices"][3 * i + 1], mesh_json["vertices"][3 * i + 2])
+                normal.addData3(mesh_json["normals"][3 * i], mesh_json["normals"][3 * i + 1], mesh_json["normals"][3 * i + 2])
                 texcoord.addData2(mesh_json["texcoords"][2 * i], mesh_json["texcoords"][2 * i + 1])
 
             # Create primitive

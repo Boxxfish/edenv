@@ -6,7 +6,7 @@ Environment editor for EDEnv.
 from pathlib import Path
 import sys
 import yaml
-from direct.showbase.ShowBase import ShowBase, WindowProperties, PandaNode
+from direct.showbase.ShowBase import ShowBase, WindowProperties, PandaNode, DirectionalLight
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.edenv_component import EComponent
@@ -31,6 +31,11 @@ class EnvEdit(ShowBase):
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)
         EComponent.panda_root_node = self.render.attach_new_node(PandaNode("Root"))
         EComponent.base = self
+
+        # Attach a directional light to the camera
+        self.dir_light = DirectionalLight("cam_dir_light")
+        dir_light_path = self.camera.attach_new_node(self.dir_light)
+        EComponent.panda_root_node.setLight(dir_light_path)
 
         # Set up scene data
         self.envedit_data = EnveditData()
