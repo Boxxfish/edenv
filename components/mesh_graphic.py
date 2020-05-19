@@ -7,7 +7,7 @@ from pathlib import Path
 
 from direct.showbase.Loader import Loader
 from panda3d.core import GeomVertexData, GeomVertexFormat, Geom, GeomVertexWriter, GeomTriangles, GeomNode, \
-    TextureAttrib, RenderState, SamplerState
+    TextureAttrib, RenderState, SamplerState, TransformState, LMatrix4f
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.property_type import PropertyType
 
@@ -71,9 +71,12 @@ class MeshGraphic(EComponent):
             self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
 
             # Set the transform of the geometry node
-            self.geom_path.setPos(self.node.transform.trans[0], self.node.transform.trans[1], self.node.transform.trans[2])
-            self.geom_path.setHpr(self.node.transform.rot[0], self.node.transform.rot[1], self.node.transform.rot[2])
-            self.geom_path.setScale(self.node.transform.scale[0], self.node.transform.scale[1], self.node.transform.scale[2])
+            mat = self.node.transform.get_world_matrix()
+            panda_mat = LMatrix4f(mat[0][0], mat[1][0], mat[2][0], mat[3][0],
+                                  mat[0][1], mat[1][1], mat[2][1], mat[3][1],
+                                  mat[0][2], mat[1][2], mat[2][2], mat[3][2],
+                                  mat[0][3], mat[1][3], mat[2][3], mat[3][3])
+            self.geom_path.setTransform(TransformState.makeMat(panda_mat))
 
     # Called when the component is removed
     def on_gui_remove(self, properties):

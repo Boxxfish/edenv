@@ -3,6 +3,8 @@ Represents a graph node for EDEnv's internal scene graph representation.
 
 @author Ben Giacalone
 """
+import numpy as np
+
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.transform import Transform
 
@@ -11,6 +13,7 @@ class GraphNode:
 
     def __init__(self, name="", data=[]):
         self.transform = Transform()
+        self.transform.on_matrix_update = self.on_matrix_update
         self.children = []
         self.parent = None
         self.data = data
@@ -21,11 +24,13 @@ class GraphNode:
     # Adds a child node to this node.
     def add_child(self, node):
         node.parent = self
+        node.transform.set_parent_matrix(self.transform.get_world_matrix())
         self.children.append(node)
 
     # Removes a child from this node.
     def remove_child(self, node):
         node.parent = None
+        node.transform.set_parent_matrix(np.identity(4))
         self.children.remove(node)
 
     # Adds a component to the node
@@ -68,6 +73,12 @@ class GraphNode:
             if child is not None:
                 return child
 
+    # Handles a matrix update
+    def on_matrix_update(self, matrix):
+        for child in self.children:
+            child.transform.set_parent_matrix(matrix)
+            child.component_property_changed()
+
     # Processes the scene graph and returns a dict representation
     @staticmethod
     def scene_graph_to_dict(node):
@@ -89,9 +100,7 @@ class GraphNode:
         node = GraphNode()
         node.name = node_dict["name"]
         node.data = []
-        transform = Transform()
-        transform.load_from_dict(node_dict["transform"])
-        node.transform = transform
+        node.transform.load_from_dict(node_dict["transform"])
         for component_dict in node_dict["components"]:
             component = EComponent()
             component.load_from_dict(component_dict)
