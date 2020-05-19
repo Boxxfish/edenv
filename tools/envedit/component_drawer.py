@@ -9,8 +9,10 @@ from tools.envedit.gui.gui_dropdown import GUIDropdownVisualType, GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
+from tools.envedit.gui.gui_number_box import GUINumberBox
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_text_box import GUITextBox
+from tools.envedit.property_type import PropertyType
 
 
 class ComponentDrawer(GUIFrame):
@@ -73,11 +75,36 @@ class ComponentDrawer(GUIFrame):
                 spacer.bbox.width = 20
                 property_layout.add_child(spacer)
 
-                property_val = GUITextBox()
-                property_val.data = property
-                property_val.set_text(self.component.property_vals[property])
-                property_val.on_text_changed = self.text_change_handler
-                property_layout.add_child(property_val)
+                if property_type == PropertyType.INT:
+                    property_val = GUINumberBox(use_int=True)
+                    property_val.text_box.data = property
+                    property_val.text_box.set_text(self.component.property_vals[property])
+                    property_val.text_box.on_text_changed = self.text_change_handler
+                    property_layout.add_child(property_val)
+                elif property_type == PropertyType.FLOAT:
+                    property_val = GUINumberBox()
+                    property_val.text_box.data = property
+                    property_val.text_box.set_text(self.component.property_vals[property])
+                    property_val.text_box.on_text_changed = self.text_change_handler
+                    property_layout.add_child(property_val)
+                elif property_type == PropertyType.BOOL:
+                    property_val = GUITextBox()
+                    property_val.data = property
+                    property_val.set_text(self.component.property_vals[property])
+                    property_val.on_text_changed = self.text_change_handler
+                    property_layout.add_child(property_val)
+                elif property_type == PropertyType.STRING:
+                    property_val = GUITextBox()
+                    property_val.data = property
+                    property_val.set_text(self.component.property_vals[property])
+                    property_val.on_text_changed = self.text_change_handler
+                    property_layout.add_child(property_val)
+                elif property_type == PropertyType.FILE:
+                    property_val = GUITextBox()
+                    property_val.data = property
+                    property_val.set_text(self.component.property_vals[property])
+                    property_val.on_text_changed = self.text_change_handler
+                    property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
         self.envedit_data.target_node.remove_component(item.data)

@@ -21,12 +21,16 @@ class GUITextBox(GUIFrame):
         self.text = ""
         self.normal_color = (1, 1, 1, 0.2)
         self.focus_color = (1, 1, 1, 0.3)
+        self.normal_text_color = (1, 1, 1, 1)
+        self.invalid_text_color = (1, 0, 0, 1)
+        self.curr_text_color = self.normal_text_color
         self.set_bg_color(self.normal_color)
 
         self.use_single_label()
 
-        self.on_text_changed = None
-        self.on_lost_focus = None
+        self.on_text_changed = None     # Called when text is changed
+        self.on_lost_focus = None       # Called when textbox loses focus
+        self.validate_text = None       # Called to check if text is in correct format
         self.data = None
 
     def update(self):
@@ -42,6 +46,7 @@ class GUITextBox(GUIFrame):
         if self.child is not None:
             self.remove_child()
         self.set_child(GUILabel())
+        self.child.set_text_color(self.curr_text_color)
         self.child.receive_events = False
         self.child.set_text(self.text)
         self.update()
@@ -54,6 +59,7 @@ class GUITextBox(GUIFrame):
         self.child.bbox.height = self.bbox.height
 
         first_label = GUILabel()
+        first_label.set_text_color(self.curr_text_color)
         first_label.receive_events = False
         self.child.add_child(first_label)
 
@@ -64,18 +70,41 @@ class GUITextBox(GUIFrame):
         self.child.add_child(cursor)
 
         second_label = GUILabel()
+        second_label.set_text_color(self.curr_text_color)
         second_label.receive_events = False
         self.child.add_child(second_label)
 
         self.update()
 
     def set_text(self, text):
+        # Validate text
         self.text = text
+        text_valid = True
+        if self.validate_text is not None:
+            text_valid = self.validate_text(text)
+
+        # Set text
         if self.focused:
             self.child.children[0].set_text(self.text[:self.cursor_pos])
             self.child.children[2].set_text(self.text[self.cursor_pos:])
         else:
             self.child.set_text(self.text)
+
+        if text_valid:
+            self.curr_text_color = self.normal_text_color
+            if self.on_text_changed is not None:
+                self.on_text_changed(self)
+        else:
+            self.curr_text_color = self.invalid_text_color
+        self.set_text_color(self.curr_text_color)
+        self.update()
+
+    def set_text_color(self, color):
+        if self.focused:
+            self.child.children[0].set_text_color(color)
+            self.child.children[2].set_text_color(color)
+        else:
+            self.child.set_text_color(color)
 
     def handle_left_pressed(self):
         self.cursor_pos = len(self.text)
@@ -92,10 +121,9 @@ class GUITextBox(GUIFrame):
             self.on_lost_focus(self)
 
     def handle_keystroke(self, key):
-        self.set_text(self.text[:self.cursor_pos] + key + self.text[self.cursor_pos:])
+        new_text = self.text[:self.cursor_pos] + key + self.text[self.cursor_pos:]
         self.cursor_pos += 1
-        if self.on_text_changed is not None:
-            self.on_text_changed(self)
+        self.set_text(new_text)
 
     def handle_special_key(self, key):
         if key == "backspace":
@@ -117,6 +145,3 @@ class GUITextBox(GUIFrame):
                 self.update()
         elif key == "enter":
             GUISystem.release_focus()
-
-        if self.on_text_changed is not None:
-            self.on_text_changed(self)
