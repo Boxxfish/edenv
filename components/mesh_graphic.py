@@ -70,6 +70,8 @@ class MeshGraphic(EComponent):
 
             # Set the transform of the geometry node
             self.geom_path.setPos(self.node.transform.trans[0], self.node.transform.trans[1], self.node.transform.trans[2])
+            self.geom_path.setHpr(self.node.transform.rot[0], self.node.transform.rot[1], self.node.transform.rot[2])
+            self.geom_path.setScale(self.node.transform.scale[0], self.node.transform.scale[1], self.node.transform.scale[2])
 
     # Called when the component is removed
     def on_gui_remove(self, properties):

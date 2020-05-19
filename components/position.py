@@ -11,23 +11,26 @@ class Position(EComponent):
 
     def __init__(self):
         EComponent.__init__(self)
-        self.x = 0
-        self.y = 0
-        self.z = 0
         
     # Called by scene editor to get this component's properties
     @staticmethod
     def get_properties():
-        return {"x": PropertyType.FLOAT, "y": PropertyType.FLOAT, "z": PropertyType.FLOAT}
+        return {"pos_x": PropertyType.FLOAT,
+                "pos_y": PropertyType.FLOAT,
+                "pos_z": PropertyType.FLOAT,
+                "rot_x": PropertyType.FLOAT,
+                "rot_y": PropertyType.FLOAT,
+                "rot_z": PropertyType.FLOAT,
+                "scale_x": PropertyType.FLOAT,
+                "scale_y": PropertyType.FLOAT,
+                "scale_z": PropertyType.FLOAT}
 
     # Called when component property is changed
     def on_gui_change(self, properties):
-        # Update transform
-        if self.node is not None:
-            self.node.transform.set_translation(np.array([float(properties["x"]), float(properties["y"]), float(properties["z"])]))
+        self.node.transform.set_translation(np.array([float(properties["pos_x"]), float(properties["pos_y"]), float(properties["pos_z"])]))
+        self.node.transform.set_rotation(np.array([float(properties["rot_x"]), float(properties["rot_y"]), float(properties["rot_z"])]))
+        self.node.transform.set_scale(np.array([float(properties["scale_x"]), float(properties["scale_y"]), float(properties["scale_z"])]))
 
     # Called when the scene starts
     def start(self, properties):
-        self.x = properties["x"]
-        self.y = properties["y"]
-        self.z = properties["z"]
+        pass

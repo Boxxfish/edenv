@@ -109,9 +109,15 @@ class ColladaImporter:
         # Add a Position component
         pos_component = EComponent()
         pos_component.set_script("components.position")
-        pos_component.property_vals["x"] = str(node.transform.trans[0].item())
-        pos_component.property_vals["y"] = str(node.transform.trans[1].item())
-        pos_component.property_vals["z"] = str(node.transform.trans[2].item())
+        pos_component.property_vals["pos_x"] = str(node.transform.trans[0].item())
+        pos_component.property_vals["pos_y"] = str(node.transform.trans[1].item())
+        pos_component.property_vals["pos_z"] = str(node.transform.trans[2].item())
+        pos_component.property_vals["rot_x"] = str(node.transform.rot[0].item())
+        pos_component.property_vals["rot_y"] = str(node.transform.rot[1].item())
+        pos_component.property_vals["rot_z"] = str(node.transform.rot[2].item())
+        pos_component.property_vals["scale_x"] = str(node.transform.scale[0].item())
+        pos_component.property_vals["scale_y"] = str(node.transform.scale[1].item())
+        pos_component.property_vals["scale_z"] = str(node.transform.scale[2].item())
         node.add_component(pos_component)
 
         # If scene_node holds a mesh, add a MeshGraphic
@@ -119,7 +125,7 @@ class ColladaImporter:
             mesh_renderer = EComponent()
             mesh_renderer.set_script("components.mesh_graphic")
             mesh_renderer.property_vals["mesh"] = scene_node.controller.geometry.name
-            node.add_component(mesh_renderer)
+            node.data.append(mesh_renderer)
 
         # If scene_node is ExtraNode, return nothing
         if type(scene_node) == collada.scene.ExtraNode:
