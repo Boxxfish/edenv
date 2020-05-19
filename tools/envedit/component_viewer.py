@@ -26,25 +26,24 @@ class ComponentViewer(GUIFrame):
         self.bbox.width = 300
         self.padding = 10
 
-        layout = GUIStackLayout()
-        self.set_child(layout)
+        self.layout = GUIStackLayout()
+        self.set_child(self.layout)
 
         title = GUILabel()
         title.text_size = 30
         title.set_font(GUISystem.get_font("default_light"))
         title.set_text("Components")
-        layout.add_child(title)
+        self.layout.add_child(title)
 
         spacer = GUIComponent()
         spacer.bbox.height = 20
-        layout.add_child(spacer)
+        self.layout.add_child(spacer)
 
         self.add_component_dropdown = GUIDropdown()
         self.add_component_dropdown.child.set_text("Add Component...")
-        layout.add_child(self.add_component_dropdown)
 
         self.component_layout = GUIStackLayout()
-        layout.add_child(self.component_layout)
+        self.layout.add_child(self.component_layout)
 
     # Sets up the components for the viewer
     def setup_components(self):
@@ -75,6 +74,12 @@ class ComponentViewer(GUIFrame):
     # Updates the viewer
     def update_viewer(self):
         if self.envedit_data is not None and self.envedit_data.target_node is not None:
+            # Only add "add component" button if scene root isn't selected
+            self.layout.remove_child(self.add_component_dropdown)
+            if self.envedit_data.target_node is not self.envedit_data.scene_root:
+                self.layout.add_child(self.add_component_dropdown, 2)
+
+            # Set up the node's components
             self.setup_components()
             self.update()
 
