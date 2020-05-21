@@ -13,6 +13,7 @@ from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
+from tools.envedit.gui.gui_text_box import GUITextBox
 
 
 class GraphViewer(GUIFrame):
@@ -145,6 +146,12 @@ class GraphViewer(GUIFrame):
             del_node_button.data = item
             menu.child.add_child(del_node_button)
 
+            ren_node_button = GUIMenuItem()
+            ren_node_button.child.set_text("Rename Node")
+            ren_node_button.on_release = self.ren_node_handler
+            ren_node_button.data = item
+            menu.child.add_child(ren_node_button)
+
         # No clue why this works
         menu.update()
         menu.update()
@@ -177,3 +184,30 @@ class GraphViewer(GUIFrame):
         # Update model
         self.envedit_data.modify()
         self.envedit_data.update()
+
+    # Handles the "rename node" option being selected
+    def ren_node_handler(self, item):
+        # Replace list label with textbox
+        node_name = item.data.data.name
+        text_box = GUITextBox()
+        text_box.data = item.data
+        text_box.set_text(node_name)
+        item.data.child.remove_child(item.data.child.children[3])
+        item.data.child.add_child(text_box)
+        text_box.handle_left_pressed()
+        text_box.on_lost_focus = self.rename_lost_focus
+
+    # Handles losing focus of renaming text box
+    def rename_lost_focus(self, item):
+        # Check if name was changed
+        if item.data.data.name != item.text:
+            self.envedit_data.modify()
+
+        # Replace textbox with list label
+        item.data.data.name = item.text
+        label = GUILabel()
+        label.text_size = 15
+        label.receive_events = False
+        label.set_text(item.data.data.name)
+        item.data.child.remove_child(item.data.child.children[3])
+        item.data.child.add_child(label)
