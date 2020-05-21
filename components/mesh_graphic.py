@@ -9,6 +9,7 @@ from direct.showbase.Loader import Loader
 from panda3d.core import GeomVertexData, GeomVertexFormat, Geom, GeomVertexWriter, GeomTriangles, GeomNode, \
     TextureAttrib, RenderState, SamplerState, TransformState, LMatrix4f
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.object_selector import ObjectSelector
 from tools.envedit.property_type import PropertyType
 
 
@@ -18,6 +19,7 @@ class MeshGraphic(EComponent):
         EComponent.__init__(self)
         self.mesh = None
         self.geom_path = None
+        self.object_id = 0
         
     # Called by scene editor to get this component's properties
     @staticmethod
@@ -72,6 +74,11 @@ class MeshGraphic(EComponent):
                 state = RenderState.make(attrib)
                 geom_node.addGeom(geom, state)
                 self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
+                if hasattr(self, "object_id"):
+                    self.geom_path.set_shader_input("object_id", self.object_id)
+                else:
+                    self.object_id = ObjectSelector.gen_obj_id(self.pressed_callback)
+                    self.geom_path.set_shader_input("object_id", self.object_id)
 
         # Set the transform of the geometry node
         if hasattr(self, "geom_path") and self.geom_path is not None:
@@ -86,6 +93,10 @@ class MeshGraphic(EComponent):
     def on_gui_remove(self, properties):
         if hasattr(self, "geom_path") and self.geom_path is not None:
             self.geom_path.removeNode()
+
+    # Called when the component is pressed
+    def on_pressed(self):
+        pass
 
     # Called when the scene starts
     def start(self, properties):

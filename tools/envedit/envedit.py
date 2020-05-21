@@ -3,10 +3,11 @@ Environment editor for EDEnv.
 
 @author Ben Giacalone
 """
+from os import path
 from pathlib import Path
 import sys
 import yaml
-from direct.showbase.ShowBase import ShowBase, WindowProperties, PandaNode, DirectionalLight
+from direct.showbase.ShowBase import ShowBase, DirectionalLight, PandaNode, WindowProperties
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.edenv_component import EComponent
@@ -17,6 +18,7 @@ from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
+from tools.envedit.object_selector import ObjectSelector
 from tools.envedit.toolbar import Toolbar
 import tkinter as tk
 
@@ -70,9 +72,13 @@ class EnvEdit(ShowBase):
         self.floor_node = FloorNode(self)
         floor_path = self.render.attach_new_node(self.floor_node)
         floor_path.setTwoSided(True)
+        floor_path.set_shader_input("object_id", 0)
 
         # Add camera controller
         self.cam_controller = CameraController(self, self.render, self.camera)
+
+        # Add object selector
+        self.object_selector = ObjectSelector(self, self.envedit_data)
 
         # Add graph viewer
         self.graph_viewer = GraphViewer()
@@ -102,7 +108,8 @@ class EnvEdit(ShowBase):
         dirty_marker = "*" if self.envedit_data.dirty else ""
         window_properties = WindowProperties()
         if self.envedit_data.save_path is not None:
-            window_properties.setTitle(f"{dirty_marker}{Path(self.envedit_data.save_path).name} | {self.envedit_data.project_name}")
+            window_properties.setTitle(
+                f"{dirty_marker}{Path(self.envedit_data.save_path).name} | {self.envedit_data.project_name}")
         else:
             window_properties.setTitle(f"{dirty_marker}new_scene | {self.envedit_data.project_name}")
         self.win.requestProperties(window_properties)

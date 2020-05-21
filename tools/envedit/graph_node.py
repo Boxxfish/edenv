@@ -20,6 +20,7 @@ class GraphNode:
         for component in data:
             component.node = self
         self.name = name
+        self.pressed_callback = None
 
     # Adds a child node to this node.
     def add_child(self, node):

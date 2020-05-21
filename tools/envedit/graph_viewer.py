@@ -61,6 +61,7 @@ class GraphViewer(GUIFrame):
 
         # If list item was not found, insert the new item into the hierarchy
         if list_item is None:
+            node.pressed_callback = self.node_pressed_handler
             list_item = self.create_new_item(node)
 
             # For the root node, just add it to the scene list
@@ -139,6 +140,11 @@ class GraphViewer(GUIFrame):
         # No clue why this works
         menu.update()
         menu.update()
+
+    # Handles a node being selected
+    def node_pressed_handler(self, node):
+        self.envedit_data.target_node = node
+        self.envedit_data.update()
 
     # Handles the "add node" option being selected
     def add_node_handler(self, item):

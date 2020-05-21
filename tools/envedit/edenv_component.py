@@ -73,8 +73,16 @@ class EComponent:
     def component_removed(self, properties):
         self.component_class.on_gui_remove(self, self.property_vals)
 
+    # Called when component is pressed
+    def pressed_callback(self):
+        self.node.pressed_callback(self.node)
+        self.component_class.on_pressed(self)
+
     def on_gui_change(self, properties):
         pass
 
     def on_gui_remove(self, properties):
+        pass
+
+    def on_pressed(self):
         pass
