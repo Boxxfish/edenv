@@ -112,6 +112,14 @@ class GraphViewer(GUIFrame):
     def update_viewer(self):
         if self.envedit_data is not None:
             self.setup_scene_tree(self.envedit_data.scene_root, self.scene_list)
+
+            # If target_node is in list, select it
+            if self.envedit_data.target_node is not None and self.scene_list.selected_item.data is not self.envedit_data.target_node:
+                for list_item in self.scene_list.child.children:
+                    if list_item.data is self.envedit_data.target_node:
+                        list_item.select()
+                        break
+
             self.update()
 
     # Called when a list item is clicked
