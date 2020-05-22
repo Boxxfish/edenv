@@ -100,9 +100,10 @@ class EnvEdit(ShowBase):
 
     # Updates the GUI after a change to the scene
     def update_gui(self):
-        # Update scene graph viewer and component viewer
+        # Update scene graph viewer, component viewer, and object selector
         self.graph_viewer.update_viewer()
         self.component_viewer.update_viewer()
+        self.object_selector.update_selector()
 
         # Update window title
         dirty_marker = "*" if self.envedit_data.dirty else ""

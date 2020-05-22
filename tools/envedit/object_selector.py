@@ -10,14 +10,17 @@ from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task
 from panda3d.core import Shader, PNMImage, Filename, NodePath
 
+from tools.envedit.selectable_object import SelectableObject
+
 
 class ObjectSelector(DirectObject):
-    object_callbacks = [None for _ in range(256)]
+    selectable_objects = [None for _ in range(256)]
 
     def __init__(self, base, envedit_data):
         self.base = base
         self.envedit_data = envedit_data
-        self.target_object_id = -1
+        self.target_object_id = 0
+        self.selected_object_id = 0
 
         # Create frame buffer
         self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", 512, 512, to_ram=True)
@@ -41,7 +44,7 @@ class ObjectSelector(DirectObject):
         self.accept("mouse1-up", self.handle_left_mouse_released)
 
         # Remove the background from selecting
-        ObjectSelector.object_callbacks[0] = (None, None)
+        ObjectSelector.selectable_objects[0] = SelectableObject()
 
         # Add object selection task
         self.add_task(self.handle_object_selection)
@@ -73,35 +76,65 @@ class ObjectSelector(DirectObject):
 
     # Handles left mouse button pressed
     def handle_left_mouse_pressed(self):
-        object_slot = ObjectSelector.object_callbacks[self.target_object_id]
-        if object_slot[0] is not None:
-            object_slot[0]()
+        if self.target_object_id == 0:
+            return
+
+        self.set_selected_obj(ObjectSelector.selectable_objects[self.target_object_id])
 
     # Handles left mouse button released
     def handle_left_mouse_released(self):
-        object_slot = ObjectSelector.object_callbacks[self.target_object_id]
-        if object_slot[1] is not None:
-            object_slot[1]()
+        if self.target_object_id == 0:
+            return
 
-    # Generates an object ID and assigns callbacks to it
+        obj = ObjectSelector.selectable_objects[self.target_object_id]
+        obj.on_released()
+
+    # Sets the currently selected object
+    def set_selected_obj(self, selectable_object):
+        former_obj = ObjectSelector.selectable_objects[self.selected_object_id]
+        curr_obj = ObjectSelector.selectable_objects[selectable_object.get_object_id()]
+
+        self.selected_object_id = curr_obj.get_object_id()
+        former_obj.on_deselected()
+        curr_obj.on_pressed()
+
+    # Updates the object selector
+    def update_selector(self):
+        if self.envedit_data.target_node is not None and self.envedit_data.target_node.object_id is not self.selected_object_id:
+            target_node_id = self.envedit_data.target_node.object_id
+            self.set_selected_obj(ObjectSelector.selectable_objects[target_node_id])
+
+    # Generates an object ID
     @staticmethod
-    def gen_obj_id(pressed_callback=None, released_callback=None):
+    def gen_obj_id():
         # Find lowest empty slot
         obj_index = -1
         for i in range(256):
-            if ObjectSelector.object_callbacks[i] is None:
+            if ObjectSelector.selectable_objects[i] is None:
                 obj_index = i
                 break
 
         # Check if empty slot was found
         if obj_index == -1:
             raise Exception("Ran out of object slots")
-
-        # Assign callbacks
-        ObjectSelector.object_callbacks[obj_index] = (pressed_callback, released_callback)
         return obj_index
 
     # Frees an object ID for usage
     @staticmethod
     def free_obj_id(object_id):
-        ObjectSelector.object_callbacks[object_id] = None
+        ObjectSelector.selectable_objects[object_id] = None
+
+    # Generates a new selectable object
+    @staticmethod
+    def gen_selectable_obj(mesh_json=None):
+        obj = SelectableObject(mesh_json)
+        obj_id = ObjectSelector.gen_obj_id()
+        obj.set_object_id(obj_id)
+        ObjectSelector.selectable_objects[obj_id] = obj
+        return obj
+
+    # Destroys a selectable object
+    @staticmethod
+    def destroy_selectable_obj(selectable_object):
+        ObjectSelector.free_obj_id(selectable_object.get_object_id())
+        selectable_object.destroy()

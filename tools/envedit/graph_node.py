@@ -20,7 +20,7 @@ class GraphNode:
         for component in data:
             component.node = self
         self.name = name
-        self.pressed_callback = None
+        self.object_id = 0          # Allows node to be picked with the ObjectSelector
 
     # Adds a child node to this node.
     def add_child(self, node):
@@ -79,6 +79,11 @@ class GraphNode:
         for child in self.children:
             child.transform.set_parent_matrix(matrix)
             child.component_property_changed()
+
+    # Selects the node and updates its components
+    def select(self):
+        for component in self.data:
+            component.component_class.on_node_selected(component)
 
     # Processes the scene graph and returns a dict representation
     @staticmethod

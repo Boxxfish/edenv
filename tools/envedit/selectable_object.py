@@ -11,17 +11,17 @@ from direct.showbase.Loader import Loader, SamplerState
 from panda3d.core import GeomVertexData, GeomVertexFormat, Geom, GeomVertexWriter, GeomTriangles, GeomNode, \
     TextureAttrib, RenderState, LMatrix4f, TransformState
 from tools.envedit.edenv_component import EComponent
-from tools.envedit.object_selector import ObjectSelector
 
 
 class SelectableObject:
 
-    def __init__(self, mesh_json=None):
+    def __init__(self, mesh_json=None, object_id=0):
         self.matrix = np.identity(4)
-        self.object_id = self.object_id = ObjectSelector.gen_obj_id(self.pressed_callback, self.released_callback)
+        self.object_id = object_id
         self.geom_path = None
-        self.on_pressed = None
-        self.on_released = None
+        self.on_pressed_callback = None
+        self.on_released_callback = None
+        self.on_deselect_callback = None
 
         if mesh_json is not None:
             self.gen_geom(mesh_json)
@@ -74,6 +74,8 @@ class SelectableObject:
     # Sets the object ID
     def set_object_id(self, object_id):
         self.object_id = object_id
+        if self.geom_path is not None:
+            self.geom_path.set_shader_input("object_id", self.object_id)
 
     # Sets the world matrix of the selectable object
     def set_world_matrix(self, matrix):
@@ -86,15 +88,19 @@ class SelectableObject:
 
     # Destroys the selectable object
     def destroy(self):
-        ObjectSelector.free_obj_id(self.object_id)
         self.geom_path.removeNode()
 
     # Handles the object being pressed
-    def pressed_callback(self):
-        if self.on_pressed is not None:
-            self.on_pressed()
+    def on_pressed(self):
+        if self.on_pressed_callback is not None:
+            self.on_pressed_callback()
 
     # Handles the object being released
-    def released_callback(self):
-        if self.on_released is not None:
-            self.on_released()
+    def on_released(self):
+        if self.on_released_callback is not None:
+            self.on_released_callback()
+
+    # Handles the object being deselected
+    def on_deselected(self):
+        if self.on_deselect_callback is not None:
+            self.on_deselect_callback()

@@ -5,6 +5,7 @@ Renders a mesh.
 import json
 from pathlib import Path
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.object_selector import ObjectSelector
 from tools.envedit.property_type import PropertyType
 from tools.envedit.selectable_object import SelectableObject
 
@@ -39,8 +40,10 @@ class MeshGraphic(EComponent):
                 return
             with open(mesh_path, "r") as file:
                 mesh_json = json.load(file)
-                self.selectable_object = SelectableObject(mesh_json)
-                self.selectable_object.on_pressed = self.pressed_callback
+                self.selectable_object = ObjectSelector.gen_selectable_obj(mesh_json)
+                self.selectable_object.on_pressed_callback = self.pressed_callback
+                self.selectable_object.on_deselect_callback = self.deselected_callback
+                self.node.object_id = self.selectable_object.get_object_id()
 
         # Change selected object's matrix
         if hasattr(self, "selectable_object") and self.selectable_object is not None:
@@ -49,11 +52,15 @@ class MeshGraphic(EComponent):
     # Called when the component is removed
     def on_gui_remove(self, properties):
         if hasattr(self, "selectable_object") and self.selectable_object is not None:
-            self.selectable_object.destroy()
+            ObjectSelector.destroy_selectable_obj(self.selectable_object)
 
-    # Called when the component is pressed
-    def on_pressed(self):
-        pass
+    # Called when the node is selected
+    def on_node_selected(self):
+        self.selectable_object.get_geom().setColor((1, 1, 0, 1))
+
+    # Called when node is deselected
+    def on_node_deselected(self):
+        self.selectable_object.get_geom().setColor((1, 1, 1, 1))
 
     # Called when the scene starts
     def start(self, properties):
