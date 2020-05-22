@@ -20,7 +20,6 @@ class GraphNode:
         for component in data:
             component.node = self
         self.name = name
-        self.object_id = 0          # Allows node to be picked with the ObjectSelector
 
     # Adds a child node to this node.
     def add_child(self, node):

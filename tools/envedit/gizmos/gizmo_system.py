@@ -1,26 +1,25 @@
 """
-Handles 3D object selection.
+Generates and manages gizmos.
 
 @author Ben Giacalone
 """
 from os import path
 from pathlib import Path
-
 from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task
-from panda3d.core import Shader, PNMImage, Filename, NodePath
-
-from tools.envedit.selectable_object import SelectableObject
+from panda3d.core import Shader, Filename, NodePath, PNMImage
 
 
-class ObjectSelector(DirectObject):
-    selectable_objects = [None for _ in range(256)]
+class GizmoSystem(DirectObject):
+    gizmos = [None for _ in range(256)]
+    gizmo_system = None
 
     def __init__(self, base, envedit_data):
         self.base = base
         self.envedit_data = envedit_data
-        self.target_object_id = 0
-        self.selected_object_id = 0
+        self.target_gizmo = None
+        self.focus_gizmo = None
+        GizmoSystem.gizmo_system = self
 
         # Create frame buffer
         self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", 512, 512, to_ram=True)
@@ -28,7 +27,7 @@ class ObjectSelector(DirectObject):
         self.frame_buffer.setClearColor((0, 0, 0, 1))
 
         # Load object selection shader
-        shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent / "res/shaders"
+        shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/shaders"
         self.color_picker_shader = Shader.load(Shader.SL_GLSL,
                                                vertex=Filename(shader_folder_path / "picker.vert").cStr(),
                                                fragment=Filename(shader_folder_path / "picker.frag").cStr())
@@ -42,9 +41,11 @@ class ObjectSelector(DirectObject):
         # Register events
         self.accept("mouse1", self.handle_left_mouse_pressed)
         self.accept("mouse1-up", self.handle_left_mouse_released)
+        self.accept("mouse3", self.handle_right_mouse_pressed)
+        self.accept("mouse3-up", self.handle_right_mouse_released)
 
-        # Remove the background from selecting
-        ObjectSelector.selectable_objects[0] = SelectableObject()
+        # Remove background from selection
+        GizmoSystem.gizmos[0] = 1
 
         # Add object selection task
         self.add_task(self.handle_object_selection)
@@ -66,43 +67,39 @@ class ObjectSelector(DirectObject):
         # Get object ID
         if 0 < mouse_x < 512 and 0 < mouse_y < 512:
             object_id = frame_pnm.getPixel(mouse_x, mouse_y)[0]
-            self.target_object_id = object_id
+
+            # Change target gizmo
+            old_target = self.target_gizmo
+            self.target_gizmo = None if object_id is 0 else GizmoSystem.gizmos[object_id]
+
+            # Call cursor enter and exit callbacks
+            if old_target != self.target_gizmo:
+                if self.target_gizmo is not None:
+                    self.target_gizmo.handle_cursor_enter()
+                if old_target is not None:
+                    old_target.handle_cursor_exit()
 
         return Task.cont
 
-    # "Destructor" for object selector
-    def destroy(self):
-        self.ignore_all()
-
     # Handles left mouse button pressed
     def handle_left_mouse_pressed(self):
-        if self.target_object_id == 0:
-            return
-
-        self.set_selected_obj(ObjectSelector.selectable_objects[self.target_object_id])
+        if self.target_gizmo is not None:
+            self.target_gizmo.handle_left_pressed()
 
     # Handles left mouse button released
     def handle_left_mouse_released(self):
-        if self.target_object_id == 0:
-            return
+        if self.target_gizmo is not None:
+            self.target_gizmo.handle_left_released()
 
-        obj = ObjectSelector.selectable_objects[self.target_object_id]
-        obj.on_released()
+    # Handles right mouse button pressed
+    def handle_right_mouse_pressed(self):
+        if self.target_gizmo is not None:
+            self.target_gizmo.handle_right_pressed()
 
-    # Sets the currently selected object
-    def set_selected_obj(self, selectable_object):
-        former_obj = ObjectSelector.selectable_objects[self.selected_object_id]
-        curr_obj = ObjectSelector.selectable_objects[selectable_object.get_object_id()]
-
-        self.selected_object_id = curr_obj.get_object_id()
-        former_obj.on_deselected()
-        curr_obj.on_pressed()
-
-    # Updates the object selector
-    def update_selector(self):
-        if self.envedit_data.target_node is not None and self.envedit_data.target_node.object_id is not self.selected_object_id:
-            target_node_id = self.envedit_data.target_node.object_id
-            self.set_selected_obj(ObjectSelector.selectable_objects[target_node_id])
+    # Handles right mouse button released
+    def handle_right_mouse_released(self):
+        if self.target_gizmo is not None:
+            self.target_gizmo.handle_right_released()
 
     # Generates an object ID
     @staticmethod
@@ -110,7 +107,7 @@ class ObjectSelector(DirectObject):
         # Find lowest empty slot
         obj_index = -1
         for i in range(256):
-            if ObjectSelector.selectable_objects[i] is None:
+            if GizmoSystem.gizmos[i] is None:
                 obj_index = i
                 break
 
@@ -122,19 +119,28 @@ class ObjectSelector(DirectObject):
     # Frees an object ID for usage
     @staticmethod
     def free_obj_id(object_id):
-        ObjectSelector.selectable_objects[object_id] = None
+        GizmoSystem.gizmos[object_id] = None
 
-    # Generates a new selectable object
+    # Adds a gizmo to the system
     @staticmethod
-    def gen_selectable_obj(mesh_json=None):
-        obj = SelectableObject(mesh_json)
-        obj_id = ObjectSelector.gen_obj_id()
-        obj.set_object_id(obj_id)
-        ObjectSelector.selectable_objects[obj_id] = obj
-        return obj
+    def add_gizmo(gizmo):
+        obj_id = GizmoSystem.gen_obj_id()
+        gizmo.set_object_id(obj_id)
+        GizmoSystem.gizmos[obj_id] = gizmo
 
-    # Destroys a selectable object
+    # Removes a gizmo from the system
     @staticmethod
-    def destroy_selectable_obj(selectable_object):
-        ObjectSelector.free_obj_id(selectable_object.get_object_id())
-        selectable_object.destroy()
+    def remove_gizmo(gizmo):
+        GizmoSystem.gizmos.remove(gizmo)
+
+    # Sets the current focused gizmo
+    @staticmethod
+    def set_focus(gizmo):
+        if GizmoSystem.gizmo_system.focus_gizmo not in [gizmo, None]:
+            GizmoSystem.gizmo_system.focus_gizmo.handle_lost_focus()
+        GizmoSystem.gizmo_system.focus_gizmo = gizmo
+
+    # Sets the current focused gizmo to none
+    @staticmethod
+    def release_focus():
+        GizmoSystem.set_focus(None)

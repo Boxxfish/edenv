@@ -11,11 +11,13 @@ from direct.showbase.Loader import Loader, SamplerState
 from panda3d.core import GeomVertexData, GeomVertexFormat, Geom, GeomVertexWriter, GeomTriangles, GeomNode, \
     TextureAttrib, RenderState, LMatrix4f, TransformState
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.gizmos.gizmo import Gizmo
 
 
-class SelectableObject:
+class MeshGizmo(Gizmo):
 
     def __init__(self, mesh_json=None, object_id=0):
+        Gizmo.__init__(self)
         self.matrix = np.identity(4)
         self.object_id = object_id
         self.geom_path = None
@@ -26,13 +28,34 @@ class SelectableObject:
         if mesh_json is not None:
             self.gen_geom(mesh_json)
 
+    # Sets the world matrix of the selectable object
+    def set_world_matrix(self, matrix):
+        self.matrix = matrix
+        panda_mat = LMatrix4f(matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
+                              matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
+                              matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
+                              matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3])
+        self.geom_path.setTransform(TransformState.makeMat(panda_mat))
+
+    def handle_left_pressed(self):
+        if self.on_pressed_callback is not None:
+            self.on_pressed_callback()
+
+    def handle_lost_focus(self):
+        if self.on_deselect_callback is not None:
+            self.on_deselect_callback()
+
+    def set_object_id(self, object_id):
+        Gizmo.set_object_id(self, object_id)
+        if self.geom_path is not None:
+            self.geom_path.set_shader_input("object_id", self.object_id)
+
+    # Destroys the selectable object
+    def destroy(self):
+        self.geom_path.removeNode()
+
     # Generates geometry node from JSON
     def gen_geom(self, mesh_json):
-        # Load texture
-        tex = Loader(EComponent.base).loadTexture((Path("resources") / mesh_json["texture"]).absolute())
-        tex.setMagfilter(SamplerState.FT_nearest)
-        tex.setMinfilter(SamplerState.FT_nearest)
-
         # Set up vertex data
         vdata = GeomVertexData(str(random.randint(0, 255)) + "_vdata", GeomVertexFormat.get_v3n3t2(), Geom.UHStatic)
         vcount = len(mesh_json["vertices"]) // 3
@@ -55,52 +78,24 @@ class SelectableObject:
         geom = Geom(vdata)
         geom.add_primitive(prim)
 
+        # Load texture
+        tex = None
+        if "texture" in mesh_json:
+            tex = Loader(EComponent.base).loadTexture((Path("resources") / mesh_json["texture"]).absolute())
+            tex.setMagfilter(SamplerState.FT_nearest)
+            tex.setMinfilter(SamplerState.FT_nearest)
+
         # Create new geometry node
         geom_node = GeomNode(str(random.randint(0, 255)) + "_node")
-        attrib = TextureAttrib.make(tex)
-        state = RenderState.make(attrib)
-        geom_node.addGeom(geom, state)
+        if tex is None:
+            geom_node.addGeom(geom)
+        else:
+            attrib = TextureAttrib.make(tex)
+            state = RenderState.make(attrib)
+            geom_node.addGeom(geom, state)
         self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
         self.geom_path.set_shader_input("object_id", self.object_id)
 
     # Returns the geometry node path
     def get_geom(self):
         return self.geom_path
-
-    # Returns the object ID
-    def get_object_id(self):
-        return self.object_id
-
-    # Sets the object ID
-    def set_object_id(self, object_id):
-        self.object_id = object_id
-        if self.geom_path is not None:
-            self.geom_path.set_shader_input("object_id", self.object_id)
-
-    # Sets the world matrix of the selectable object
-    def set_world_matrix(self, matrix):
-        self.matrix = matrix
-        panda_mat = LMatrix4f(matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
-                              matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
-                              matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
-                              matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3])
-        self.geom_path.setTransform(TransformState.makeMat(panda_mat))
-
-    # Destroys the selectable object
-    def destroy(self):
-        self.geom_path.removeNode()
-
-    # Handles the object being pressed
-    def on_pressed(self):
-        if self.on_pressed_callback is not None:
-            self.on_pressed_callback()
-
-    # Handles the object being released
-    def on_released(self):
-        if self.on_released_callback is not None:
-            self.on_released_callback()
-
-    # Handles the object being deselected
-    def on_deselected(self):
-        if self.on_deselect_callback is not None:
-            self.on_deselect_callback()

@@ -3,7 +3,6 @@ Environment editor for EDEnv.
 
 @author Ben Giacalone
 """
-from os import path
 from pathlib import Path
 import sys
 import yaml
@@ -12,13 +11,13 @@ from tools.envedit.camera_controller import CameraController
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
+from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
-from tools.envedit.object_selector import ObjectSelector
 from tools.envedit.toolbar import Toolbar
 import tkinter as tk
 
@@ -68,6 +67,9 @@ class EnvEdit(ShowBase):
         root = tk.Tk()
         root.withdraw()
 
+        # Set up gizmo system
+        self.gizmo_system = GizmoSystem(self, self.envedit_data)
+
         # Add floor
         self.floor_node = FloorNode(self)
         floor_path = self.render.attach_new_node(self.floor_node)
@@ -76,9 +78,6 @@ class EnvEdit(ShowBase):
 
         # Add camera controller
         self.cam_controller = CameraController(self, self.render, self.camera)
-
-        # Add object selector
-        self.object_selector = ObjectSelector(self, self.envedit_data)
 
         # Add graph viewer
         self.graph_viewer = GraphViewer()
@@ -100,10 +99,9 @@ class EnvEdit(ShowBase):
 
     # Updates the GUI after a change to the scene
     def update_gui(self):
-        # Update scene graph viewer, component viewer, and object selector
+        # Update scene graph viewer and component viewer
         self.graph_viewer.update_viewer()
         self.component_viewer.update_viewer()
-        self.object_selector.update_selector()
 
         # Update window title
         dirty_marker = "*" if self.envedit_data.dirty else ""
