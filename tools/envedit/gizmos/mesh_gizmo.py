@@ -1,5 +1,5 @@
 """
-A selectable object that can be picked by the object selector.
+A selectable mesh.
 
 @author Ben Giacalone
 """

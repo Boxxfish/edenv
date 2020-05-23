@@ -19,10 +19,14 @@ class GizmoSystem(DirectObject):
         self.envedit_data = envedit_data
         self.target_gizmo = None
         self.focus_gizmo = None
+        self.drag_gizmo = None
         GizmoSystem.gizmo_system = self
 
         # Create frame buffer
-        self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", 512, 512, to_ram=True)
+        self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer",
+                                                            self.base.win.getXSize(),
+                                                            self.base.win.getYSize(),
+                                                            to_ram=True)
         self.frame_buffer.setSort(-100)
         self.frame_buffer.setClearColor((0, 0, 0, 1))
 
@@ -39,10 +43,13 @@ class GizmoSystem(DirectObject):
         self.color_cam.node().setInitialState(color_cam_options.getState())
 
         # Register events
+        self.accept("window-event", self.handle_window)
         self.accept("mouse1", self.handle_left_mouse_pressed)
         self.accept("mouse1-up", self.handle_left_mouse_released)
         self.accept("mouse3", self.handle_right_mouse_pressed)
         self.accept("mouse3-up", self.handle_right_mouse_released)
+
+        self.accept("v", self.base.bufferViewer.toggleEnable)
 
         # Remove background from selection
         GizmoSystem.gizmos[0] = 1
@@ -56,8 +63,8 @@ class GizmoSystem(DirectObject):
         mouse_x = 0
         mouse_y = 0
         if self.base.mouseWatcherNode.hasMouse():
-            mouse_x = int(512 * ((self.base.mouseWatcherNode.getMouseX() + 1) / 2))
-            mouse_y = int(512 * (1 - (self.base.mouseWatcherNode.getMouseY() + 1) / 2))
+            mouse_x = int(self.base.win.getXSize() * ((self.base.mouseWatcherNode.getMouseX() + 1) / 2))
+            mouse_y = int(self.base.win.getYSize() * (1 - (self.base.mouseWatcherNode.getMouseY() + 1) / 2))
 
         # Extract texture
         frame_texture = self.frame_buffer.getTexture()
@@ -65,12 +72,16 @@ class GizmoSystem(DirectObject):
         frame_texture.store(frame_pnm)
 
         # Get object ID
-        if 0 < mouse_x < 512 and 0 < mouse_y < 512:
+        if 0 < mouse_x < self.base.win.getXSize() and 0 < mouse_y < self.base.win.getYSize():
             object_id = frame_pnm.getPixel(mouse_x, mouse_y)[0]
 
             # Change target gizmo
             old_target = self.target_gizmo
-            self.target_gizmo = None if object_id is 0 else GizmoSystem.gizmos[object_id]
+            self.target_gizmo = None if object_id == 0 else GizmoSystem.gizmos[object_id]
+
+            # Handle dragging element
+            if self.drag_gizmo is not None:
+                self.drag_gizmo.handle_drag(mouse_x, mouse_y)
 
             # Call cursor enter and exit callbacks
             if old_target != self.target_gizmo:
@@ -81,6 +92,21 @@ class GizmoSystem(DirectObject):
 
         return Task.cont
 
+    # Handles window being resized
+    def handle_window(self, window):
+        # Regenerate frame buffer
+        self.base.graphicsEngine.removeWindow(self.frame_buffer)
+        self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", window.size.x, window.size.y, to_ram=True)
+        self.frame_buffer.setSort(-100)
+        self.frame_buffer.setClearColor((0, 0, 0, 1))
+
+        # Set up color picking camera
+        self.color_cam.removeNode()
+        self.color_cam = self.base.makeCamera(self.frame_buffer)
+        color_cam_options = NodePath("color_cam_options")
+        color_cam_options.setShader(self.color_picker_shader)
+        self.color_cam.node().setInitialState(color_cam_options.getState())
+
     # Handles left mouse button pressed
     def handle_left_mouse_pressed(self):
         if self.target_gizmo is not None:
@@ -88,6 +114,7 @@ class GizmoSystem(DirectObject):
 
     # Handles left mouse button released
     def handle_left_mouse_released(self):
+        GizmoSystem.release_drag()
         if self.target_gizmo is not None:
             self.target_gizmo.handle_left_released()
 
@@ -131,7 +158,7 @@ class GizmoSystem(DirectObject):
     # Removes a gizmo from the system
     @staticmethod
     def remove_gizmo(gizmo):
-        GizmoSystem.gizmos.remove(gizmo)
+        GizmoSystem.gizmos[gizmo.object_id] = None
 
     # Sets the current focused gizmo
     @staticmethod
@@ -144,3 +171,15 @@ class GizmoSystem(DirectObject):
     @staticmethod
     def release_focus():
         GizmoSystem.set_focus(None)
+
+    # Sets the drag gizmo
+    @staticmethod
+    def set_drag(gizmo):
+        GizmoSystem.gizmo_system.drag_gizmo = gizmo
+
+    # Sets the current focused gizmo to none
+    @staticmethod
+    def release_drag():
+        if GizmoSystem.gizmo_system.drag_gizmo is not None:
+            GizmoSystem.gizmo_system.drag_gizmo.handle_drag_stop()
+        GizmoSystem.set_drag(None)

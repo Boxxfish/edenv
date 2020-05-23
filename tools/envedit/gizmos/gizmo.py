@@ -34,7 +34,11 @@ class Gizmo:
         pass
 
     # Handles the cursor dragging
-    def handle_drag(self, delta_x, delta_y):
+    def handle_drag(self, screen_x, screen_y):
+        pass
+
+    # Handles the cursor drag stopping
+    def handle_drag_stop(self):
         pass
 
     # Handles the gizmo losing focus
