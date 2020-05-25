@@ -20,7 +20,10 @@ class ComponentDrawer(GUIFrame):
     def __init__(self, component=None):
         GUIFrame.__init__(self)
         self.component = component
+        if self.component is not None:
+            self.component.component_update_callback = self.component_change_handler
         self.envedit_data = None
+        self.property_fields = {}
 
         # GUI settings
         self.fit_height_to_content = True
@@ -80,30 +83,35 @@ class ComponentDrawer(GUIFrame):
                     property_val.text_box.data = property
                     property_val.text_box.set_text(self.component.property_vals[property])
                     property_val.text_box.on_text_changed = self.text_change_handler
+                    self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
                 elif property_type == PropertyType.FLOAT:
                     property_val = GUINumberBox()
                     property_val.text_box.data = property
                     property_val.text_box.set_text(self.component.property_vals[property])
                     property_val.text_box.on_text_changed = self.text_change_handler
+                    self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
                 elif property_type == PropertyType.BOOL:
                     property_val = GUITextBox()
                     property_val.data = property
                     property_val.set_text(self.component.property_vals[property])
                     property_val.on_text_changed = self.text_change_handler
+                    self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
                 elif property_type == PropertyType.STRING:
                     property_val = GUITextBox()
                     property_val.data = property
                     property_val.set_text(self.component.property_vals[property])
                     property_val.on_text_changed = self.text_change_handler
+                    self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
                 elif property_type == PropertyType.FILE:
                     property_val = GUITextBox()
                     property_val.data = property
                     property_val.set_text(self.component.property_vals[property])
                     property_val.on_text_changed = self.text_change_handler
+                    self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
 
     def del_option_handler(self, item):
@@ -120,3 +128,19 @@ class ComponentDrawer(GUIFrame):
         self.component.node.component_property_changed()
         self.envedit_data.modify()
         self.envedit_data.update()
+
+    # Handles component changing values
+    def component_change_handler(self, property_name):
+        property_type = self.component.property_types[property_name]
+        property_val = self.property_fields[property_name]
+
+        if property_type == PropertyType.INT:
+            property_val.set_text(self.component.property_vals[property_name])
+        elif property_type == PropertyType.FLOAT:
+            property_val.set_text(str(int(float(self.component.property_vals[property_name]) * 1000) / 1000))
+        elif property_type == PropertyType.BOOL:
+            property_val.set_text(self.component.property_vals[property_name])
+        elif property_type == PropertyType.STRING:
+            property_val.set_text(self.component.property_vals[property_name])
+        elif property_type == PropertyType.FILE:
+            property_val.set_text(self.component.property_vals[property_name])

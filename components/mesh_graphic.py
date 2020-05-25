@@ -16,24 +16,24 @@ class MeshGraphic(EComponent):
         EComponent.__init__(self)
         self.mesh = None
         self.mesh_gizmo = None
-        
+
     # Called by scene editor to get this component's properties
     @staticmethod
     def get_properties():
         return {"mesh": PropertyType.FILE}
 
     # Called when component property is changed
-    def on_gui_change(self, properties):
+    def on_gui_change(self):
         # Only change mesh if it's different
-        if not hasattr(self, "mesh") or self.mesh is not properties["mesh"]:
+        if self.mesh is not self.property_vals["mesh"]:
 
             # If a selectable object already exists, remove it
-            if hasattr(self, "selectable_object") and self.selectable_object is not None:
-                self.selectable_object.destroy()
-                self.selectable_object = None
+            if self.mesh_gizmo is not None:
+                self.mesh_gizmo.destroy()
+                self.mesh_gizmo = None
 
             # Open mesh file
-            self.mesh = properties["mesh"]
+            self.mesh = self.property_vals["mesh"]
             mesh_path = Path("resources") / (self.mesh + ".json")
             if not mesh_path.exists():
                 return
@@ -45,12 +45,12 @@ class MeshGraphic(EComponent):
                 GizmoSystem.add_gizmo(self.mesh_gizmo)
 
         # Change selected object's matrix
-        if hasattr(self, "mesh_gizmo") and self.mesh_gizmo is not None:
+        if self.mesh_gizmo is not None:
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
     # Called when the component is removed
     def on_gui_remove(self, properties):
-        if hasattr(self, "mesh_gizmo") and self.mesh_gizmo is not None:
+        if self.mesh_gizmo is not None:
             self.mesh_gizmo.destroy()
             GizmoSystem.remove_gizmo(self.mesh_gizmo)
 
@@ -66,3 +66,11 @@ class MeshGraphic(EComponent):
     # Called when the scene starts
     def start(self, properties):
         self.mesh = properties["mesh"]
+
+    # Called when mesh gizmo is pressed
+    def pressed_callback(self):
+        pass
+
+    # Called when mesh gizmo is deselected
+    def deselected_callback(self):
+        pass

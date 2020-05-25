@@ -79,11 +79,6 @@ class GraphNode:
             child.transform.set_parent_matrix(matrix)
             child.component_property_changed()
 
-    # Selects the node and updates its components
-    def select(self):
-        for component in self.data:
-            component.component_class.on_node_selected(component)
-
     # Processes the scene graph and returns a dict representation
     @staticmethod
     def scene_graph_to_dict(node):
@@ -107,8 +102,7 @@ class GraphNode:
         node.data = []
         node.transform.load_from_dict(node_dict["transform"])
         for component_dict in node_dict["components"]:
-            component = EComponent()
-            component.load_from_dict(component_dict)
+            component = EComponent.load_from_dict(component_dict)
             node.add_component(component)
 
         for child in node_dict["children"]:

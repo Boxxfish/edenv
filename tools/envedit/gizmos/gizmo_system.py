@@ -20,6 +20,10 @@ class GizmoSystem(DirectObject):
         self.target_gizmo = None
         self.focus_gizmo = None
         self.drag_gizmo = None
+        self.mouse_x = 0
+        self.mouse_y = 0
+        self.raw_mouse_x = 0
+        self.raw_mouse_y = 0
         GizmoSystem.gizmo_system = self
 
         # Create frame buffer
@@ -59,36 +63,40 @@ class GizmoSystem(DirectObject):
 
     # Task to handle object selection
     def handle_object_selection(self, task):
-        # Get mouse screen space coords
-        mouse_x = 0
-        mouse_y = 0
         if self.base.mouseWatcherNode.hasMouse():
-            mouse_x = int(self.base.win.getXSize() * ((self.base.mouseWatcherNode.getMouseX() + 1) / 2))
-            mouse_y = int(self.base.win.getYSize() * (1 - (self.base.mouseWatcherNode.getMouseY() + 1) / 2))
+            # Get mouse screen space coords
+            self.raw_mouse_x = self.base.mouseWatcherNode.getMouseX()
+            self.raw_mouse_y = self.base.mouseWatcherNode.getMouseY()
+            mouse_x = int(self.base.win.getXSize() * ((self.raw_mouse_x + 1) / 2))
+            mouse_y = int(self.base.win.getYSize() * (1 - (self.raw_mouse_y + 1) / 2))
 
-        # Extract texture
-        frame_texture = self.frame_buffer.getTexture()
-        frame_pnm = PNMImage()
-        frame_texture.store(frame_pnm)
+            if mouse_x != self.mouse_x or mouse_y != self.mouse_y:
+                self.mouse_x = mouse_x
+                self.mouse_y = mouse_y
 
-        # Get object ID
-        if 0 < mouse_x < self.base.win.getXSize() and 0 < mouse_y < self.base.win.getYSize():
-            object_id = frame_pnm.getPixel(mouse_x, mouse_y)[0]
+                # Extract texture
+                frame_texture = self.frame_buffer.getTexture()
+                frame_pnm = PNMImage()
+                frame_texture.store(frame_pnm)
 
-            # Change target gizmo
-            old_target = self.target_gizmo
-            self.target_gizmo = None if object_id == 0 else GizmoSystem.gizmos[object_id]
+                # Get object ID
+                if 0 < self.mouse_x < self.base.win.getXSize() and 0 < self.mouse_y < self.base.win.getYSize():
+                    object_id = frame_pnm.getPixel(self.mouse_x, self.mouse_y)[0]
 
-            # Handle dragging element
-            if self.drag_gizmo is not None:
-                self.drag_gizmo.handle_drag(mouse_x, mouse_y)
+                    # Change target gizmo
+                    old_target = self.target_gizmo
+                    self.target_gizmo = None if object_id == 0 else GizmoSystem.gizmos[object_id]
 
-            # Call cursor enter and exit callbacks
-            if old_target != self.target_gizmo:
-                if self.target_gizmo is not None:
-                    self.target_gizmo.handle_cursor_enter()
-                if old_target is not None:
-                    old_target.handle_cursor_exit()
+                    # Handle dragging element
+                    if self.drag_gizmo is not None:
+                        self.drag_gizmo.handle_drag()
+
+                    # Call cursor enter and exit callbacks
+                    if old_target != self.target_gizmo:
+                        if self.target_gizmo is not None:
+                            self.target_gizmo.handle_cursor_enter()
+                        if old_target is not None:
+                            old_target.handle_cursor_exit()
 
         return Task.cont
 
@@ -175,6 +183,8 @@ class GizmoSystem(DirectObject):
     # Sets the drag gizmo
     @staticmethod
     def set_drag(gizmo):
+        GizmoSystem.gizmo_system.start_drag_x = GizmoSystem.gizmo_system.mouse_x
+        GizmoSystem.gizmo_system.start_drag_y = GizmoSystem.gizmo_system.mouse_y
         GizmoSystem.gizmo_system.drag_gizmo = gizmo
 
     # Sets the current focused gizmo to none

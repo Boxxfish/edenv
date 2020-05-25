@@ -17,7 +17,7 @@ class EComponent:
         self.property_vals = {}
         self.node = None
         self.script_path = None
-        self.component_class = None
+        self.component_update_callback = None       # Called when component modifies
 
     # Returns the default value of the field type
     @staticmethod
@@ -33,24 +33,6 @@ class EComponent:
         elif property_type == PropertyType.FILE:
             return "File Path"
 
-    # Sets the component's script and its property types
-    def set_script(self, script_path):
-        self.script_path = script_path
-
-        # Import the first class in the script path
-        module_name = script_path.split(".")[-1].title()
-        module_name = module_name.replace("_", "")
-        module = __import__(script_path, fromlist=[module_name])
-        self.component_class = getattr(module, module_name)
-
-        # Set properties of EComponent
-        self.name = module_name
-        self.property_types = self.component_class.get_properties()
-        self.property_vals = {}
-        for property in self.property_types:
-            self.property_vals[property] = EComponent.get_default_value(self.property_types[property])
-        self.property_changed()
-
     # Returns a dictionary with the values of the component
     def to_dict(self):
         component_dict = {}
@@ -58,38 +40,41 @@ class EComponent:
         component_dict["values"] = self.property_vals
         return component_dict
 
-    # Loads the values from a dictionary into itself
-    def load_from_dict(self, component_dict):
-        self.set_script(component_dict["script_path"])
-        self.property_vals = component_dict["values"]
-        self.property_changed()
-
     # Called when a property value has changed
     def property_changed(self):
-        if self.node is not None and self.component_class is not None:
-            self.component_class.on_gui_change(self, self.property_vals)
+        self.on_gui_change()
 
-    # Called when the component is removed
-    def component_removed(self, properties):
-        self.component_class.on_gui_remove(self, self.property_vals)
+    def on_gui_change(self):
+        pass
 
-    # Called when node is pressed
-    def pressed_callback(self):
-        self.node.pressed_callback(self.node)
-        self.component_class.on_node_selected(self)
-
-    # Called when node is deselected
-    def deselected_callback(self):
-        self.component_class.on_node_deselected(self)
-
-    def on_gui_change(self, properties):
+    def on_gui_change_selected(self):
         pass
 
     def on_gui_remove(self, properties):
         pass
 
-    def on_node_selected(self):
-        pass
+    # Returns the component from a script path
+    @staticmethod
+    def from_script(script_path):
+        # Import the first class in the script path
+        module_name = script_path.split(".")[-1].title()
+        module_name = module_name.replace("_", "")
+        module = __import__(script_path, fromlist=[module_name])
+        component_class = getattr(module, module_name)
+        new_component = component_class()
 
-    def on_node_deselected(self):
-        pass
+        # Set properties of new component
+        new_component.name = module_name
+        new_component.property_types = component_class.get_properties()
+        new_component.property_vals = {}
+        for property in new_component.property_types:
+            new_component.property_vals[property] = EComponent.get_default_value(new_component.property_types[property])
+
+        return new_component
+
+    # Creates a new component from a dictionary
+    @staticmethod
+    def load_from_dict(component_dict):
+        new_component = EComponent.from_script(component_dict["script_path"])
+        new_component.property_vals = component_dict["values"]
+        return new_component

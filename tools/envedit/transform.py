@@ -16,7 +16,7 @@ class Transform:
         self.trans = np.array([0, 0, 0])
         self.rot = np.array([0, 0, 0])
         self.scale = np.array([1, 1, 1])
-        self.on_matrix_update = None           # Callback is called when transform is changed
+        self.on_matrix_update = None  # Callback is called when transform is changed
 
     # Sets the parent matrix of the transform
     def set_parent_matrix(self, matrix):
@@ -78,15 +78,57 @@ class Transform:
                          [0, 0, scale[2], 0],
                          [0, 0, 0, 1]])
 
-    # Sets the translation of the transform
+    # Returns the local translation of the transform
+    def get_translation(self):
+        return self.trans
+
+    # Sets the local translation of the transform
     def set_translation(self, translation):
         self.trans = translation
         self.update()
+
+    # Returns the translation of the world transform
+    def get_world_translation(self):
+        world_trans = self.parent_matrix.dot(np.array([self.trans[0],
+                                                       self.trans[1],
+                                                       self.trans[2],
+                                                       1]))
+        return np.array([world_trans[0], world_trans[1], world_trans[2]])
+
+    # Sets the world translation of the transform
+    def set_world_translation(self, world_translation):
+        # Convert world translation to local
+        local_trans_mat = np.linalg.inv(self.parent_matrix).dot(self.get_trans_mat(world_translation))
+        self.trans = np.array([local_trans_mat[0][3],
+                               local_trans_mat[1][3],
+                               local_trans_mat[2][3]])
+
+    # Returns the local rotation of the transform
+    def get_rotation(self):
+        return self.rot
+
+    # Returns the world rotation of the world transform
+    def get_world_rotation(self):
+        world_mat = self.parent_matrix.dot(self.get_mat())
+        world_transform = Transform()
+        world_transform.set_matrix(world_mat)
+        return world_transform.get_rotation()
 
     # Sets the rotation of the transform
     def set_rotation(self, rotation):
         self.rot = rotation
         self.update()
+
+    # Returns the local scale of the transform
+    def get_scale(self):
+        return self.scale
+
+    # Returns the world scale of the world transform
+    def get_world_scale(self):
+        world_mat = self.parent_matrix.dot(self.get_mat())
+        world_transform = Transform()
+        world_transform.set_matrix(world_mat)
+        return world_transform.get_scale()
 
     # Sets the scale of the transform
     def set_scale(self, scale):

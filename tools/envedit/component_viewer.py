@@ -96,8 +96,7 @@ class ComponentViewer(GUIFrame):
 
     # Handles a component to add being selected
     def add_component_handler(self, item):
-        component = EComponent()
-        component.set_script(item.data)
+        component = EComponent.from_script(item.data)
         self.envedit_data.target_node.add_component(component)
         self.envedit_data.modify()
         self.envedit_data.update()

@@ -2,17 +2,10 @@
 Represents the world space position of this model.
 
 """
-import json
 import math
-from os import path
-from pathlib import Path
-
 import numpy as np
-from panda3d.core import ShadeModelAttrib, Filename, Shader
-
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
-from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
 from tools.envedit.gizmos.translate_arrow_gizmo import TranslateArrowGizmo
 from tools.envedit.property_type import PropertyType
 from tools.envedit.transform import Transform
@@ -40,20 +33,60 @@ class Position(EComponent):
                 "scale_z": PropertyType.FLOAT}
 
     # Called when component property is changed
-    def on_gui_change(self, properties):
+    def on_gui_change(self):
         # Set transform properties
-        self.node.transform.set_translation(np.array([float(properties["pos_x"]),
-                                                      float(properties["pos_y"]),
-                                                      float(properties["pos_z"])]))
-        self.node.transform.set_rotation(np.array([math.radians(float(properties["rot_x"])),
-                                                   math.radians(float(properties["rot_y"])),
-                                                   math.radians(float(properties["rot_z"]))]))
-        self.node.transform.set_scale(np.array([float(properties["scale_x"]),
-                                                float(properties["scale_y"]),
-                                                float(properties["scale_z"])]))
+        self.node.transform.set_translation(np.array([float(self.property_vals["pos_x"]),
+                                                      float(self.property_vals["pos_y"]),
+                                                      float(self.property_vals["pos_z"])]))
+        self.node.transform.set_rotation(np.array([math.radians(float(self.property_vals["rot_x"])),
+                                                   math.radians(float(self.property_vals["rot_y"])),
+                                                   math.radians(float(self.property_vals["rot_z"]))]))
+        self.node.transform.set_scale(np.array([float(self.property_vals["scale_x"]),
+                                                float(self.property_vals["scale_y"]),
+                                                float(self.property_vals["scale_z"])]))
 
-        # Destroy previous arrows
-        if hasattr(self, "x_arrow_gizmo"):
+        # Create arrows
+        if self.x_arrow_gizmo is None:
+            self.x_arrow_gizmo = TranslateArrowGizmo(TranslateArrowGizmo.DIR_X)
+            self.x_arrow_gizmo.set_color((0.8, 0.2, 0.2, 1))
+            GizmoSystem.add_gizmo(self.x_arrow_gizmo)
+            self.x_arrow_gizmo.component = self
+            self.x_arrow_gizmo.translate_callback = Position.handle_translation
+
+            self.y_arrow_gizmo = TranslateArrowGizmo(TranslateArrowGizmo.DIR_Y)
+            self.y_arrow_gizmo.set_color((0.2, 0.8, 0.2, 1))
+            GizmoSystem.add_gizmo(self.y_arrow_gizmo)
+            self.y_arrow_gizmo.component = self
+            self.y_arrow_gizmo.translate_callback = Position.handle_translation
+
+            self.z_arrow_gizmo = TranslateArrowGizmo(TranslateArrowGizmo.DIR_Z)
+            self.z_arrow_gizmo.set_color((0.2, 0.2, 0.8, 1))
+            GizmoSystem.add_gizmo(self.z_arrow_gizmo)
+            self.z_arrow_gizmo.component = self
+            self.z_arrow_gizmo.translate_callback = Position.handle_translation
+
+        # Set arrow transforms
+        node_world_pos = self.node.transform.get_world_translation()
+
+        x_transform = Transform()
+        x_transform.set_scale((0.1, 0.1, 0.1))
+        x_transform.set_translation((node_world_pos[0] + 1, node_world_pos[1], node_world_pos[2]))
+        x_transform.set_rotation((0, math.radians(90), 0))
+        self.x_arrow_gizmo.set_world_matrix(x_transform.get_mat())
+
+        y_transform = Transform()
+        y_transform.set_scale((0.1, 0.1, 0.1))
+        y_transform.set_translation((node_world_pos[0], node_world_pos[1] + 1, node_world_pos[2]))
+        y_transform.set_rotation((math.radians(-90), 0, 0))
+        self.y_arrow_gizmo.set_world_matrix(y_transform.get_mat())
+
+        z_transform = Transform()
+        z_transform.set_scale((0.1, 0.1, 0.1))
+        z_transform.set_translation((node_world_pos[0], node_world_pos[1], node_world_pos[2] + 1))
+        self.z_arrow_gizmo.set_world_matrix(z_transform.get_mat())
+
+    def on_gui_remove(self, properties):
+        if self.x_arrow_gizmo is not None:
             GizmoSystem.remove_gizmo(self.x_arrow_gizmo)
             self.x_arrow_gizmo.destroy()
             GizmoSystem.remove_gizmo(self.y_arrow_gizmo)
@@ -61,35 +94,20 @@ class Position(EComponent):
             GizmoSystem.remove_gizmo(self.z_arrow_gizmo)
             self.z_arrow_gizmo.destroy()
 
-        # Create arrows
-        self.x_arrow_gizmo = TranslateArrowGizmo()
-        self.x_arrow_gizmo.set_color((0.8, 0.2, 0.2, 1))
-        GizmoSystem.add_gizmo(self.x_arrow_gizmo)
-        x_transform = Transform()
-        x_transform.set_scale((0.1, 0.1, 0.1))
-        x_transform.set_translation(self.node.transform.trans + (1, 0, 0))
-        x_transform.set_rotation((0, math.radians(90), 0))
-        self.x_arrow_gizmo.set_world_matrix(x_transform.get_mat())
+    def handle_translation(self, new_pos):
+        # Update transform
+        self.node.transform.set_world_translation(new_pos)
 
-        self.y_arrow_gizmo = TranslateArrowGizmo()
-        self.y_arrow_gizmo.set_color((0.2, 0.8, 0.2, 1))
-        GizmoSystem.add_gizmo(self.y_arrow_gizmo)
-        y_transform = Transform()
-        y_transform.set_scale((0.1, 0.1, 0.1))
-        y_transform.set_translation(self.node.transform.trans + (0, 1, 0))
-        y_transform.set_rotation((math.radians(-90), 0, 0))
-        self.y_arrow_gizmo.set_world_matrix(y_transform.get_mat())
+        # Set position component's properties
+        self.property_vals["pos_x"] = str(self.node.transform.trans[0])
+        self.property_vals["pos_y"] = str(self.node.transform.trans[1])
+        self.property_vals["pos_z"] = str(self.node.transform.trans[2])
 
-        self.z_arrow_gizmo = TranslateArrowGizmo()
-        self.z_arrow_gizmo.set_color((0.2, 0.2, 0.8, 1))
-        GizmoSystem.add_gizmo(self.z_arrow_gizmo)
-        z_transform = Transform()
-        z_transform.set_scale((0.1, 0.1, 0.1))
-        z_transform.set_translation(self.node.transform.trans + (0, 0, 1))
-        self.z_arrow_gizmo.set_world_matrix(z_transform.get_mat())
-
-    def on_gui_remove(self, properties):
-        pass
+        self.node.component_property_changed()
+        if self.component_update_callback is not None:
+            self.component_update_callback("pos_x")
+            self.component_update_callback("pos_y")
+            self.component_update_callback("pos_z")
 
     # Called when the scene starts
     def start(self, properties):
