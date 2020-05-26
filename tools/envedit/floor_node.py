@@ -3,6 +3,7 @@ Node for Panda3d that renders a floor.
 
 @author Ben Giacalone
 """
+from os import path
 from pathlib import Path
 from panda3d.core import GeomVertexFormat, Geom, GeomVertexData, GeomVertexWriter, GeomTriangles, GeomNode, \
     TextureAttrib, RenderState, SamplerState
@@ -13,7 +14,7 @@ class FloorNode(GeomNode):
 
     def __init__(self, base):
         # Load texture
-        tex = Loader(base).loadTexture(Path("resources/checkerboard.png").absolute())
+        tex = Loader(base).loadTexture((Path(path.realpath(__file__)).parent.parent.parent / "res/images/checkerboard.png").absolute())
         tex.setMagfilter(SamplerState.FT_nearest)
         tex.setMinfilter(SamplerState.FT_nearest)
 
