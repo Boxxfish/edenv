@@ -56,20 +56,42 @@ class MeshGizmo(Gizmo):
 
     # Generates geometry node from JSON
     def gen_geom(self, mesh_json):
+        # Find vertex format
+        geom_format = GeomVertexFormat.get_v3()
+        has_normals = False
+        has_texcoords = False
+        if "normals" in mesh_json and "texcoords" in mesh_json:
+            geom_format = GeomVertexFormat.get_v3n3t2()
+            has_normals = True
+            has_texcoords = True
+        elif "normals" in mesh_json:
+            geom_format = GeomVertexFormat.get_v3n3()
+            has_normals = True
+        elif "texcoords" in mesh_json:
+            geom_format = GeomVertexFormat.get_v3t2()
+            has_texcoords = True
+
         # Set up vertex data
-        vdata = GeomVertexData(str(random.randint(0, 255)) + "_vdata", GeomVertexFormat.get_v3n3t2(), Geom.UHStatic)
+        vdata = GeomVertexData(str(random.randint(0, 255)) + "_vdata", geom_format, Geom.UHStatic)
         vcount = len(mesh_json["vertices"]) // 3
         vdata.setNumRows(vcount)
         vertex = GeomVertexWriter(vdata, "vertex")
-        normal = GeomVertexWriter(vdata, "normal")
-        texcoord = GeomVertexWriter(vdata, "texcoord")
 
         for i in range(vcount):
-            vertex.addData3(mesh_json["vertices"][3 * i], mesh_json["vertices"][3 * i + 1],
+            vertex.addData3(mesh_json["vertices"][3 * i],
+                            mesh_json["vertices"][3 * i + 1],
                             mesh_json["vertices"][3 * i + 2])
-            normal.addData3(mesh_json["normals"][3 * i], mesh_json["normals"][3 * i + 1],
-                            mesh_json["normals"][3 * i + 2])
-            texcoord.addData2(mesh_json["texcoords"][2 * i], mesh_json["texcoords"][2 * i + 1])
+        if has_normals:
+            normal = GeomVertexWriter(vdata, "normal")
+            for i in range(vcount):
+                normal.addData3(mesh_json["normals"][3 * i],
+                                mesh_json["normals"][3 * i + 1],
+                                mesh_json["normals"][3 * i + 2])
+        if has_texcoords:
+            texcoord = GeomVertexWriter(vdata, "texcoord")
+            for i in range(vcount):
+                texcoord.addData2(mesh_json["texcoords"][2 * i],
+                                  mesh_json["texcoords"][2 * i + 1])
 
         # Create primitive
         prim = GeomTriangles(Geom.UHStatic)

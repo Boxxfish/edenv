@@ -52,18 +52,21 @@ class Position(EComponent):
             GizmoSystem.add_gizmo(self.x_arrow_gizmo)
             self.x_arrow_gizmo.component = self
             self.x_arrow_gizmo.translate_callback = Position.handle_translation
+            self.x_arrow_gizmo.translate_finished_callback = Position.handle_finished_translation
 
             self.y_arrow_gizmo = TranslateArrowGizmo(TranslateArrowGizmo.DIR_Y)
             self.y_arrow_gizmo.set_color((0.2, 0.8, 0.2, 1))
             GizmoSystem.add_gizmo(self.y_arrow_gizmo)
             self.y_arrow_gizmo.component = self
             self.y_arrow_gizmo.translate_callback = Position.handle_translation
+            self.y_arrow_gizmo.translate_finished_callback = Position.handle_finished_translation
 
             self.z_arrow_gizmo = TranslateArrowGizmo(TranslateArrowGizmo.DIR_Z)
             self.z_arrow_gizmo.set_color((0.2, 0.2, 0.8, 1))
             GizmoSystem.add_gizmo(self.z_arrow_gizmo)
             self.z_arrow_gizmo.component = self
             self.z_arrow_gizmo.translate_callback = Position.handle_translation
+            self.z_arrow_gizmo.translate_finished_callback = Position.handle_finished_translation
 
         # Set arrow transforms
         node_world_pos = self.node.transform.get_world_translation()
@@ -104,6 +107,8 @@ class Position(EComponent):
         self.property_vals["pos_z"] = str(self.node.transform.trans[2])
 
         self.node.component_property_changed()
+
+    def handle_finished_translation(self):
         if self.component_update_callback is not None:
             self.component_update_callback("pos_x")
             self.component_update_callback("pos_y")

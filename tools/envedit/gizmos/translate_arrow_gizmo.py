@@ -28,6 +28,7 @@ class TranslateArrowGizmo(MeshGizmo):
         self.color = (1.0, 1.0, 1.0, 1.0)
         self.start_mouse_world_pos = np.array([0, 0, 0, 1])
         self.translate_callback = None
+        self.translate_finished_callback = None
         self.component = None
         self.start_pos = np.array([0, 0, 0])
         self.direction = direction
@@ -43,6 +44,7 @@ class TranslateArrowGizmo(MeshGizmo):
         self.get_geom().setColor(self.color)
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)
+        self.get_geom().setLightOff()
 
     # Sets arrow's color
     def set_color(self, color):
@@ -87,6 +89,8 @@ class TranslateArrowGizmo(MeshGizmo):
 
     def handle_drag_stop(self):
         self.get_geom().setColor(self.color)
+        if self.translate_finished_callback is not None:
+            self.translate_finished_callback(self.component)
 
     # Returns the world space coordinate of a screen space point
     # The world space coordinate is projected onto a 2D plane through the origin facing the camera

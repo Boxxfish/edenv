@@ -135,9 +135,9 @@ class ComponentDrawer(GUIFrame):
         property_val = self.property_fields[property_name]
 
         if property_type == PropertyType.INT:
-            property_val.set_text(self.component.property_vals[property_name])
+            property_val.text_box.set_text(self.component.property_vals[property_name])
         elif property_type == PropertyType.FLOAT:
-            property_val.set_text(str(int(float(self.component.property_vals[property_name]) * 1000) / 1000))
+            property_val.text_box.set_text(str(int(float(self.component.property_vals[property_name]) * 1000) / 1000))
         elif property_type == PropertyType.BOOL:
             property_val.set_text(self.component.property_vals[property_name])
         elif property_type == PropertyType.STRING:
