@@ -37,7 +37,7 @@ class GraphNode:
     def add_component(self, component):
         component.node = self
         self.data.append(component)
-        component.property_changed()
+        component.on_gui_change()
 
     # Removes a component from the node
     def remove_component(self, component):
@@ -50,10 +50,15 @@ class GraphNode:
         for _ in range(len(self.children)):
             self.remove_child(self.children[0])
 
-    # Triggers "property_changed" on all attached components
+    # Triggers "on_gui_change" on all attached components
     def component_property_changed(self):
         for component in self.data:
-            component.property_changed()
+            component.on_gui_change()
+
+    # Triggers "on_gui_change_selected" on all attached components
+    def component_property_changed_selected(self):
+        for component in self.data:
+            component.on_gui_change_selected()
 
     # Finds a child node in the graph
     def find_child(self, node):

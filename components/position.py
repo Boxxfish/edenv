@@ -32,8 +32,23 @@ class Position(EComponent):
                 "scale_y": PropertyType.FLOAT,
                 "scale_z": PropertyType.FLOAT}
 
-    # Called when component property is changed
+    # Called when component property is changed and the component isn't selected
     def on_gui_change(self):
+        if self.x_arrow_gizmo is not None:
+            GizmoSystem.remove_gizmo(self.x_arrow_gizmo)
+            self.x_arrow_gizmo.destroy()
+            self.x_arrow_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.y_arrow_gizmo)
+            self.y_arrow_gizmo.destroy()
+            self.y_arrow_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.z_arrow_gizmo)
+            self.z_arrow_gizmo.destroy()
+            self.z_arrow_gizmo = None
+
+    # Called when component property is changed and the component is selected
+    def on_gui_change_selected(self):
         # Set transform properties
         self.node.transform.set_translation(np.array([float(self.property_vals["pos_x"]),
                                                       float(self.property_vals["pos_y"]),
@@ -106,7 +121,7 @@ class Position(EComponent):
         self.property_vals["pos_y"] = str(self.node.transform.trans[1])
         self.property_vals["pos_z"] = str(self.node.transform.trans[2])
 
-        self.node.component_property_changed()
+        self.node.component_property_changed_selected()
 
     def handle_finished_translation(self):
         if self.component_update_callback is not None:

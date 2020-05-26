@@ -40,10 +40,6 @@ class EComponent:
         component_dict["values"] = self.property_vals
         return component_dict
 
-    # Called when a property value has changed
-    def property_changed(self):
-        self.on_gui_change()
-
     def on_gui_change(self):
         pass
 
