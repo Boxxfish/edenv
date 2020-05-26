@@ -125,11 +125,7 @@ class GraphViewer(GUIFrame):
 
     # Called when a list item is clicked
     def list_item_clicked(self, item):
-        if self.envedit_data.target_node is not None:
-            self.envedit_data.target_node.component_property_changed()
-        self.envedit_data.target_node = item.data
-        self.envedit_data.target_node.component_property_changed_selected()
-        self.envedit_data.update()
+        self.envedit_data.set_target_node(item.data)
 
     # Called when a list item is right clicked
     def list_item_right_released(self, item):

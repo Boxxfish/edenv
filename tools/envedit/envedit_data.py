@@ -10,6 +10,7 @@ from tools.envedit.graph_node import GraphNode
 
 
 class EnveditData:
+    envedit_data = None
 
     def __init__(self):
         self.scene_root = GraphNode("Scene Root")
@@ -19,6 +20,7 @@ class EnveditData:
         self.project_name = None
         self.update_callback = None
         self.panda_root_node = None
+        EnveditData.envedit_data = self
 
     # Updates the GUI after any change
     def update(self):
@@ -49,4 +51,13 @@ class EnveditData:
             self.scene_root = GraphNode.dict_to_scene_graph(file_json)
 
         self.dirty = False
+        self.update()
+
+    # Sets the target node
+    def set_target_node(self, node):
+        if self.target_node is not None:
+            self.target_node.component_property_changed()
+        self.target_node = node
+        if self.target_node is not None:
+            self.target_node.component_property_changed_selected()
         self.update()

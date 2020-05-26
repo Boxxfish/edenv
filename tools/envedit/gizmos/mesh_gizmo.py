@@ -23,7 +23,6 @@ class MeshGizmo(Gizmo):
         self.geom_path = None
         self.on_pressed_callback = None
         self.on_released_callback = None
-        self.on_deselect_callback = None
 
         if mesh_json is not None:
             self.gen_geom(mesh_json)
@@ -40,10 +39,6 @@ class MeshGizmo(Gizmo):
     def handle_left_pressed(self):
         if self.on_pressed_callback is not None:
             self.on_pressed_callback()
-
-    def handle_lost_focus(self):
-        if self.on_deselect_callback is not None:
-            self.on_deselect_callback()
 
     def set_object_id(self, object_id):
         Gizmo.set_object_id(self, object_id)

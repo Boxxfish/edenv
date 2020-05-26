@@ -96,8 +96,9 @@ class TranslateArrowGizmo(MeshGizmo):
     # The world space coordinate is projected onto a 2D plane through the origin facing the camera
     def screen_to_world(self, screen_point):
         camera = GizmoSystem.gizmo_system.base.camera
-        screen_mat = np.array([[1 / camera.getTransform().getPos().length(), 0, 0, 0],
-                               [0, 1 / camera.getTransform().getPos().length(), 0, 0],
+        dist = (camera.getTransform().getPos() - self.geom_path.getPos()).length()
+        screen_mat = np.array([[1 / dist, 0, 0, 0],
+                               [0, 1 / dist, 0, 0],
                                [0, 0, 1, 0],
                                [0, 0, 0, 1]])
         proj_mat = helper.panda_mat4_to_np(GizmoSystem.gizmo_system.base.camLens.getProjectionMat())

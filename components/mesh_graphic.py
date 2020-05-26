@@ -5,6 +5,7 @@ Renders a mesh.
 import json
 from pathlib import Path
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
 from tools.envedit.property_type import PropertyType
@@ -22,8 +23,11 @@ class MeshGraphic(EComponent):
     def get_properties():
         return {"mesh": PropertyType.FILE}
 
-    # Called when component property is changed
     def on_gui_change(self):
+        # Change color
+        if self.mesh_gizmo is not None:
+            self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
+
         # Only change mesh if it's different
         if self.mesh is not self.property_vals["mesh"]:
 
@@ -41,8 +45,16 @@ class MeshGraphic(EComponent):
                 mesh_json = json.load(file)
                 self.mesh_gizmo = MeshGizmo(mesh_json)
                 self.mesh_gizmo.on_pressed_callback = self.pressed_callback
-                self.mesh_gizmo.on_deselect_callback = self.deselected_callback
                 GizmoSystem.add_gizmo(self.mesh_gizmo)
+
+        # Change object's matrix
+        if self.mesh_gizmo is not None:
+            self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
+
+    def on_gui_change_selected(self):
+        # Change color
+        if self.mesh_gizmo is not None:
+            self.mesh_gizmo.get_geom().setColor((1, 1, 0, 1))
 
         # Change selected object's matrix
         if self.mesh_gizmo is not None:
@@ -54,23 +66,10 @@ class MeshGraphic(EComponent):
             self.mesh_gizmo.destroy()
             GizmoSystem.remove_gizmo(self.mesh_gizmo)
 
-    # Called when the node is selected
-    def on_node_selected(self):
-        GizmoSystem.set_focus(self.mesh_gizmo)
-        self.mesh_gizmo.get_geom().setColor((1, 1, 0, 1))
-
-    # Called when node is deselected
-    def on_node_deselected(self):
-        self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
-
     # Called when the scene starts
     def start(self, properties):
         self.mesh = properties["mesh"]
 
     # Called when mesh gizmo is pressed
     def pressed_callback(self):
-        pass
-
-    # Called when mesh gizmo is deselected
-    def deselected_callback(self):
-        pass
+        EnveditData.envedit_data.set_target_node(self.node)
