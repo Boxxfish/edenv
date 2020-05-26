@@ -103,7 +103,7 @@ class Position(EComponent):
         z_transform.set_translation((node_world_pos[0], node_world_pos[1], node_world_pos[2] + 1))
         self.z_arrow_gizmo.set_world_matrix(z_transform.get_mat())
 
-    def on_gui_remove(self, properties):
+    def on_gui_remove(self):
         if self.x_arrow_gizmo is not None:
             GizmoSystem.remove_gizmo(self.x_arrow_gizmo)
             self.x_arrow_gizmo.destroy()

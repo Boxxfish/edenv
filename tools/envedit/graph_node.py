@@ -29,6 +29,15 @@ class GraphNode:
 
     # Removes a child from this node.
     def remove_child(self, node):
+        # Propegate to children
+        for child in node.children:
+            node.remove_child(child)
+
+        # Remove all components of the removed node
+        for component in node.data:
+            component.on_gui_remove()
+
+        # Remove node
         node.parent = None
         node.transform.set_parent_matrix(np.identity(4))
         self.children.remove(node)
@@ -43,7 +52,7 @@ class GraphNode:
     def remove_component(self, component):
         component.node = None
         self.data.remove(component)
-        component.component_removed(component.property_vals)
+        component.on_gui_remove()
 
     # Removes all children from this node.
     def clear(self):

@@ -46,7 +46,7 @@ class EComponent:
     def on_gui_change_selected(self):
         pass
 
-    def on_gui_remove(self, properties):
+    def on_gui_remove(self):
         pass
 
     # Returns the component from a script path

@@ -24,9 +24,9 @@ class MeshGraphic(EComponent):
         return {"mesh": PropertyType.FILE}
 
     def on_gui_change(self):
-        # Change color
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
+            self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
         # Only change mesh if it's different
         if self.mesh is not self.property_vals["mesh"]:
@@ -47,24 +47,17 @@ class MeshGraphic(EComponent):
                 self.mesh_gizmo.on_pressed_callback = self.pressed_callback
                 GizmoSystem.add_gizmo(self.mesh_gizmo)
 
-        # Change object's matrix
-        if self.mesh_gizmo is not None:
-            self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
-
     def on_gui_change_selected(self):
-        # Change color
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.get_geom().setColor((1, 1, 0, 1))
-
-        # Change selected object's matrix
-        if self.mesh_gizmo is not None:
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
     # Called when the component is removed
-    def on_gui_remove(self, properties):
+    def on_gui_remove(self):
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.destroy()
             GizmoSystem.remove_gizmo(self.mesh_gizmo)
+            self.mesh_gizmo = None
 
     # Called when the scene starts
     def start(self, properties):
