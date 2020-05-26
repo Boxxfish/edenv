@@ -119,20 +119,21 @@ class ColladaImporter:
         pos_component.property_vals["scale_z"] = str(node.transform.scale[2].item())
         node.add_component(pos_component)
 
-        # If scene_node holds a mesh, add a MeshGraphic
-        if hasattr(scene_node, "controller"):
-            mesh_renderer = EComponent.from_script("components.mesh_graphic")
-            mesh_renderer.property_vals["mesh"] = scene_node.controller.geometry.name
-            node.data.append(mesh_renderer)
-
         # If scene_node is ExtraNode, return nothing
         if type(scene_node) == collada.scene.ExtraNode:
             return None
 
         if hasattr(scene_node, "children"):
             for child in scene_node.children:
-                child_node = ColladaImporter.process_node(child)
-                if child_node is not None:
-                    node.add_child(child_node)
+                # If child holds a mesh, add a MeshGraphic to this node
+                if hasattr(child, "controller"):
+                    mesh_renderer = EComponent.from_script("components.mesh_graphic")
+                    mesh_renderer.property_vals["mesh"] = child.controller.geometry.name
+                    node.data.append(mesh_renderer)
+                else:
+                    # Otherwise, treat it like a normal node
+                    child_node = ColladaImporter.process_node(child)
+                    if child_node is not None:
+                        node.add_child(child_node)
 
         return node

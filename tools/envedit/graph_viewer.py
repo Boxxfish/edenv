@@ -76,7 +76,6 @@ class GraphViewer(GUIFrame):
                     parent.expand()
                 parent.add_sub_item(list_item)
                 self.scene_list.add_item(list_item, self.scene_list.child.children.index(parent) + 1)
-                list_item.select()
 
         # Propagate to children
         for child in node.children:
@@ -87,7 +86,6 @@ class GraphViewer(GUIFrame):
             if child.data not in node.children:
                 list_item.remove_sub_item(child)
                 self.scene_list.remove_item(child)
-                list_item.select()
 
     # Clears all nodes from viewer
     def clear_viewer(self):
@@ -115,7 +113,7 @@ class GraphViewer(GUIFrame):
             self.setup_scene_tree(self.envedit_data.scene_root, self.scene_list)
 
             # If target_node is in list, select it
-            if self.envedit_data.target_node is not None and self.scene_list.selected_item.data is not self.envedit_data.target_node:
+            if self.scene_list.selected_item is None or (self.envedit_data.target_node is not None and self.scene_list.selected_item.data is not self.envedit_data.target_node):
                 for list_item in self.scene_list.child.children:
                     if list_item.data is self.envedit_data.target_node:
                         list_item.select()

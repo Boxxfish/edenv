@@ -55,9 +55,13 @@ class EnveditData:
 
     # Sets the target node
     def set_target_node(self, node):
+        # Call property changed on previous node
         if self.target_node is not None:
             self.target_node.component_property_changed()
+
+        # Call property changed on current node
         self.target_node = node
         if self.target_node is not None:
             self.target_node.component_property_changed_selected()
+
         self.update()

@@ -58,6 +58,7 @@ class EComponent:
         module = __import__(script_path, fromlist=[module_name])
         component_class = getattr(module, module_name)
         new_component = component_class()
+        new_component.script_path = script_path
 
         # Set properties of new component
         new_component.name = module_name
