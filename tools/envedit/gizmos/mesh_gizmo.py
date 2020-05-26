@@ -110,8 +110,9 @@ class MeshGizmo(Gizmo):
             attrib = TextureAttrib.make(tex)
             state = RenderState.make(attrib)
             geom_node.addGeom(geom, state)
-        self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
-        self.geom_path.set_shader_input("object_id", self.object_id)
+        if EComponent.panda_root_node is not None:
+            self.geom_path = EComponent.panda_root_node.attach_new_node(geom_node)
+            self.geom_path.set_shader_input("object_id", self.object_id)
 
     # Returns the geometry node path
     def get_geom(self):
