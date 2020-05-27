@@ -11,9 +11,12 @@ from pathlib import Path
 import numpy as np
 from panda3d.core import Filename, Shader, LVector4f
 
+from components.mesh_graphic import MeshGraphic
 from tools.envedit import helper
+from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
+from tools.envedit.graph_node import GraphNode
 from tools.envedit.transform import Transform
 
 
@@ -46,6 +49,15 @@ class TranslateArrowGizmo(MeshGizmo):
         self.get_geom().setDepthTest(False)
         self.get_geom().setLightOff()
 
+        # Define plane normal
+        self.plane_normal = None
+        if self.direction == TranslateArrowGizmo.DIR_X:
+            self.plane_normal = np.array([0, 0, 1])
+        elif self.direction == TranslateArrowGizmo.DIR_Y:
+            self.plane_normal = np.array([0, 0, 1])
+        else:
+            self.plane_normal = np.array([1, 0, 0])
+
     # Sets arrow's color
     def set_color(self, color):
         self.color = color
@@ -53,11 +65,11 @@ class TranslateArrowGizmo(MeshGizmo):
 
     def handle_left_pressed(self):
         # Get starting position of node and projected mouse
-        screen_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
-                                     GizmoSystem.gizmo_system.raw_mouse_y,
-                                     0,
-                                     1])
-        self.start_mouse_world_pos = self.screen_to_world(screen_mouse_pos)
+        view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
+                                   GizmoSystem.gizmo_system.raw_mouse_y])
+        self.start_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
+                                                                     self.component.node.transform.get_world_translation(),
+                                                                     self.plane_normal)
         self.start_pos = self.component.node.transform.get_world_translation()
 
         # Tell gizmo to start dragging
@@ -69,11 +81,13 @@ class TranslateArrowGizmo(MeshGizmo):
 
     def handle_drag(self):
         # Get projected coordinates of new mouse
-        screen_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
-                                     GizmoSystem.gizmo_system.raw_mouse_y,
-                                     0,
-                                     1])
-        new_mouse_world_pos = self.screen_to_world(screen_mouse_pos)
+        view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
+                                   GizmoSystem.gizmo_system.raw_mouse_y])
+        new_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
+                                                              self.component.node.transform.get_world_translation(),
+                                                              self.plane_normal)
+        if new_mouse_world_pos is None or self.start_mouse_world_pos is None:
+            return
 
         # Create the translation vector
         trans_vec = None
@@ -92,16 +106,29 @@ class TranslateArrowGizmo(MeshGizmo):
         if self.translate_finished_callback is not None:
             self.translate_finished_callback(self.component)
 
-    # Returns the world space coordinate of a screen space point
-    # The world space coordinate is projected onto a 2D plane through the origin facing the camera
-    def screen_to_world(self, screen_point):
+    # Returns the world space coordinate of a view space point
+    # The world space coordinate is projected onto a 2D plane facing the camera
+    def view_to_world(self, view_point):
         camera = GizmoSystem.gizmo_system.base.camera
-        dist = (camera.getTransform().getPos() - self.geom_path.getPos()).length()
-        screen_mat = np.array([[1 / dist, 0, 0, 0],
-                               [0, 1 / dist, 0, 0],
-                               [0, 0, 1, 0],
-                               [0, 0, 0, 1]])
         proj_mat = helper.panda_mat4_to_np(GizmoSystem.gizmo_system.base.camLens.getProjectionMat())
-        view_mat = np.linalg.inv(helper.panda_mat4_to_np(camera.getTransform().getMat()))
-        screen_to_world_mat = np.linalg.inv(screen_mat.dot(proj_mat.dot(view_mat)))
-        return screen_to_world_mat.dot(screen_point)
+        cam_mat = np.linalg.inv(helper.panda_mat4_to_np(camera.getTransform().getMat()))
+        view_to_world_mat = np.linalg.inv(cam_mat).dot(np.linalg.inv(proj_mat))
+        world_point = view_to_world_mat.dot(np.array([view_point[0], view_point[1], -1, 1]))[:3]
+        return world_point
+
+    # Returns the world space intersection of a camera ray and a plane
+    # The ray is generated from a view space coordinate
+    # The plane is in world space
+    def get_ray_plane_intersection(self, view_point, plane_center, plane_normal):
+        # Convert screen point to ray in world space
+        cam_pos = GizmoSystem.gizmo_system.base.camera.getTransform().getPos()
+        ray_origin = np.array([cam_pos[0], cam_pos[1], cam_pos[2]])
+        ray_dir = self.view_to_world(view_point) - ray_origin
+
+        # Calculate intersection
+        denom = ray_dir.dot(plane_normal)
+        if abs(denom) < 0.001:
+            return None
+        else:
+            multiplier = (plane_center - ray_origin).dot(plane_normal) / denom
+            return ray_origin + ray_dir * multiplier
