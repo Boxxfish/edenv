@@ -48,7 +48,8 @@ class ColladaImporter:
 
             for primitive in geometry.primitives:
                 # Set mesh's texture
-                new_mesh["texture"] = mat_map[primitive.material]
+                if primitive.material in mat_map:
+                    new_mesh["texture"] = mat_map[primitive.material]
                 for tri in list(primitive):
 
                     # Go over vertices, texture coordinates, and normals
