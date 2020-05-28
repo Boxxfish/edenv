@@ -110,6 +110,7 @@ class Position(EComponent):
             self.x_ring_gizmo.set_color((0.8, 0.2, 0.2, 1))
             GizmoSystem.add_gizmo(self.x_ring_gizmo)
             self.x_ring_gizmo.component = self
+            self.x_ring_gizmo.gen_plane_normal()
             self.x_ring_gizmo.rotate_callback = Position.handle_rotation
             self.x_ring_gizmo.rotate_finished_callback = Position.handle_finished_rotation
 
@@ -117,6 +118,7 @@ class Position(EComponent):
             self.y_ring_gizmo.set_color((0.2, 0.8, 0.2, 1))
             GizmoSystem.add_gizmo(self.y_ring_gizmo)
             self.y_ring_gizmo.component = self
+            self.y_ring_gizmo.gen_plane_normal()
             self.y_ring_gizmo.rotate_callback = Position.handle_rotation
             self.y_ring_gizmo.rotate_finished_callback = Position.handle_finished_rotation
 
@@ -124,10 +126,13 @@ class Position(EComponent):
             self.z_ring_gizmo.set_color((0.2, 0.2, 0.8, 1))
             GizmoSystem.add_gizmo(self.z_ring_gizmo)
             self.z_ring_gizmo.component = self
+            self.z_ring_gizmo.gen_plane_normal()
             self.z_ring_gizmo.rotate_callback = Position.handle_rotation
             self.z_ring_gizmo.rotate_finished_callback = Position.handle_finished_rotation
 
         node_world_pos = self.node.transform.get_world_translation()
+        node_rot_mat = self.node.transform.get_rot_mat(self.node.transform.get_rotation())
+        node_world_scale = self.node.transform.get_world_scale()
 
         # Set arrow transforms
         x_transform = Transform()
@@ -149,18 +154,19 @@ class Position(EComponent):
 
         # Set rotation transforms
         x_rot_transform = Transform()
-        x_rot_transform.set_translation(node_world_pos)
-        x_rot_transform.set_rotation((0, math.radians(90), 0))
-        self.x_ring_gizmo.set_world_matrix(x_rot_transform.get_mat())
+        x_rot_transform.set_scale(1 / node_world_scale)
+        x_rot_transform.set_rotation(np.array([0, math.radians(90), 0]))
+        self.x_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(x_rot_transform.get_mat()))
 
         y_rot_transform = Transform()
-        y_rot_transform.set_translation(node_world_pos)
-        y_rot_transform.set_rotation((math.radians(90), 0, 0))
-        self.y_ring_gizmo.set_world_matrix(y_rot_transform.get_mat())
+        y_rot_transform.set_scale(1 / node_world_scale)
+        y_rot_transform.set_rotation(np.array([math.radians(90), 0, 0]))
+        self.y_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(y_rot_transform.get_mat()))
 
         z_rot_transform = Transform()
-        z_rot_transform.set_translation(node_world_pos)
-        self.z_ring_gizmo.set_world_matrix(z_rot_transform.get_mat())
+        z_rot_transform.set_scale(1 / node_world_scale)
+        z_rot_transform.set_rotation(np.array([0, 0, math.radians(90)]))
+        self.z_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(z_rot_transform.get_mat()))
 
     def on_gui_remove(self):
         # Remove translation gizmos
@@ -224,6 +230,10 @@ class Position(EComponent):
             self.component_update_callback("rot_x")
             self.component_update_callback("rot_y")
             self.component_update_callback("rot_z")
+
+        self.x_ring_gizmo.gen_plane_normal()
+        self.y_ring_gizmo.gen_plane_normal()
+        self.z_ring_gizmo.gen_plane_normal()
 
     # Called when the scene starts
     def start(self, properties):

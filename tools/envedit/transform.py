@@ -40,10 +40,10 @@ class Transform:
                                np.linalg.norm(np.array([temp_mat[0][2], temp_mat[1][2], temp_mat[2][2]]))])
 
         # Get rotation
-        temp_mat = temp_mat * np.array([[1 / self.scale[0], 0, 0, 0],
-                                        [0, 1 / self.scale[1], 0, 0],
-                                        [0, 0, 1 / self.scale[2], 0],
-                                        [0, 0, 0, 1]])
+        temp_mat = temp_mat.dot(np.array([[1 / self.scale[0], 0, 0, 0],
+                                          [0, 1 / self.scale[1], 0, 0],
+                                          [0, 0, 1 / self.scale[2], 0],
+                                          [0, 0, 0, 1]]))
         self.rot = np.array([atan2(temp_mat[2][1], temp_mat[2][2]),
                              atan2(-temp_mat[2][0], sqrt(pow(temp_mat[2][1], 2) + pow(temp_mat[2][2], 2))),
                              atan2(temp_mat[1][0], temp_mat[0][0])])
@@ -125,10 +125,9 @@ class Transform:
 
     # Returns the world scale of the world transform
     def get_world_scale(self):
-        world_mat = self.parent_matrix.dot(self.get_mat())
-        world_transform = Transform()
-        world_transform.set_matrix(world_mat)
-        return world_transform.get_scale()
+        world_mat = Transform()
+        world_mat.set_matrix(self.get_world_matrix())
+        return world_mat.get_scale()
 
     # Sets the scale of the transform
     def set_scale(self, scale):
