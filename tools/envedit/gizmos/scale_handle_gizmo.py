@@ -1,47 +1,46 @@
 """
-A ring gizmo for rotation.
+A handle gizmo for scaling.
 
 @author Ben Giacalone
 """
 import json
-import math
 from os import path
 from pathlib import Path
+
 import numpy as np
-from math import cos, sin, atan2, asin
+
 from components.mesh_graphic import MeshGraphic
 from tools.envedit import helper
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
 from tools.envedit.graph_node import GraphNode
-from tools.envedit.transform import Transform
 
 
-class RotateRingGizmo(MeshGizmo):
-    AXIS_X = 0
-    AXIS_Y = 1
-    AXIS_Z = 2
+class ScaleHandleGizmo(MeshGizmo):
+    SCALE_X = 0
+    SCALE_Y = 1
+    SCALE_Z = 2
 
-    # axis: the axis the ring is aligned to
-    def __init__(self, axis):
+    # scale_axis: the axis to scale along
+    def __init__(self, scale_axis):
         MeshGizmo.__init__(self)
         self.color = (1.0, 1.0, 1.0, 1.0)
-        self.start_mouse_world_vec = np.array([0, 0, 0, 1])
-        self.rotate_callback = None
-        self.rotate_finished_callback = None
+        self.start_mouse_axis_pos = np.array([0, 0, 0, 1])
+        self.scale_callback = None
+        self.scale_finished_callback = None
         self.component = None
-        self.start_rot_mat = None
-        self.axis = axis
+        self.start_scale = np.array([1, 1, 1])
+        self.scale_axis = scale_axis
 
-        # Load ring mesh file
-        ring_json = None
-        ring_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/meshes/rotate_ring.json"
-        with open(ring_path, "r") as file:
-            ring_json = json.load(file)
+        # Load handle mesh file
+        handle_json = None
+        handle_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/meshes/scale_handle.json"
+        with open(handle_path, "r") as file:
+            handle_json = json.load(file)
 
         # Generate mesh (renders on top of everything else)
-        MeshGizmo.gen_geom(self, ring_json)
+        MeshGizmo.gen_geom(self, handle_json)
         self.get_geom().setColor(self.color)
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)
@@ -49,6 +48,7 @@ class RotateRingGizmo(MeshGizmo):
 
         # Define plane normal
         self.plane_normal = None
+        self.handle_dir = None
         self.gen_plane_normal()
 
     # Sets arrow's color
@@ -61,13 +61,12 @@ class RotateRingGizmo(MeshGizmo):
         node_world_pos = self.component.node.transform.get_world_translation()
         view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
                                    GizmoSystem.gizmo_system.raw_mouse_y])
-        plane_point = self.get_ray_plane_intersection(view_mouse_pos,
-                                                      self.component.node.transform.get_world_translation(),
-                                                      self.plane_normal)
-        if plane_point is None or np.linalg.norm(plane_point) < 0.001:
-            return
-        self.start_mouse_world_vec = (plane_point - node_world_pos) / np.linalg.norm(plane_point - node_world_pos)
-        self.start_rot_mat = self.component.node.transform.get_rot_mat(self.component.node.transform.get_rotation())
+        start_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
+                                                                node_world_pos,
+                                                                self.plane_normal)
+        self.start_mouse_axis_pos = (self.handle_dir.dot(start_mouse_world_pos - node_world_pos) / self.handle_dir.dot(
+            self.handle_dir)) * self.handle_dir
+        self.start_scale = self.component.node.transform.get_world_scale()
 
         # Tell gizmo to start dragging
         GizmoSystem.set_drag(self)
@@ -81,37 +80,30 @@ class RotateRingGizmo(MeshGizmo):
         node_world_pos = self.component.node.transform.get_world_translation()
         view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
                                    GizmoSystem.gizmo_system.raw_mouse_y])
-        plane_point = self.get_ray_plane_intersection(view_mouse_pos,
-                                                      node_world_pos,
-                                                      self.plane_normal)
-        if plane_point is None or np.linalg.norm(plane_point) < 0.001:
-            return
-        new_mouse_world_vec = (plane_point - node_world_pos) / np.linalg.norm(plane_point - node_world_pos)
-        if new_mouse_world_vec is None or self.start_mouse_world_vec is None:
+        new_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
+                                                              node_world_pos,
+                                                              self.plane_normal)
+        if new_mouse_world_pos is None or self.start_mouse_axis_pos is None:
             return
 
-        # Find delta angle
-        angle_sin = self.plane_normal.dot(np.cross(self.start_mouse_world_vec, new_mouse_world_vec))
-        angle_cos = new_mouse_world_vec.dot(self.start_mouse_world_vec)
-        delta_angle = math.atan2(angle_sin, angle_cos)
-
-        # Get euler rotation vector
-        new_transform = Transform()
-        if self.axis == RotateRingGizmo.AXIS_X:
-            new_transform.set_rotation(np.array([delta_angle, 0, 0]))
-        elif self.axis == RotateRingGizmo.AXIS_Y:
-            new_transform.set_rotation(np.array([0, delta_angle, 0]))
+        # Create the scaling vector
+        scale_vec = None
+        new_mouse_axis_pos = (self.handle_dir.dot(new_mouse_world_pos - node_world_pos) / self.handle_dir.dot(
+            self.handle_dir)) * self.handle_dir
+        delta_scale = np.linalg.norm(new_mouse_axis_pos) - np.linalg.norm(self.start_mouse_axis_pos)
+        if self.scale_axis == ScaleHandleGizmo.SCALE_X:
+            scale_vec = np.array([delta_scale, 0, 0])
+        elif self.scale_axis == ScaleHandleGizmo.SCALE_Y:
+            scale_vec = np.array([0, delta_scale, 0])
         else:
-            new_transform.set_rotation(np.array([0, 0, delta_angle]))
-        final_transform = Transform()
-        final_transform.set_matrix(self.start_rot_mat.dot(new_transform.get_mat()))
-        if self.rotate_callback is not None:
-            self.rotate_callback(self.component, final_transform.get_rotation())
+            scale_vec = np.array([0, 0, delta_scale])
+        if self.scale_callback is not None:
+            self.scale_callback(self.component, self.start_scale + scale_vec)
 
     def handle_drag_stop(self):
         self.get_geom().setColor(self.color)
-        if self.rotate_finished_callback is not None:
-            self.rotate_finished_callback(self.component)
+        if self.scale_finished_callback is not None:
+            self.scale_finished_callback(self.component)
 
     # Returns the world space coordinate of a view space point
     # The world space coordinate is projected onto a 2D plane facing the camera
@@ -144,9 +136,12 @@ class RotateRingGizmo(MeshGizmo):
     def gen_plane_normal(self):
         if self.component is not None:
             rot_mat = self.component.node.transform.get_rot_mat(self.component.node.transform.get_world_rotation())
-            if self.axis == RotateRingGizmo.AXIS_X:
-                self.plane_normal = rot_mat.dot(np.array([1, 0, 0, 1]))[:3]
-            elif self.axis == RotateRingGizmo.AXIS_Y:
-                self.plane_normal = rot_mat.dot(np.array([0, 1, 0, 1]))[:3]
-            else:
+            if self.scale_axis == ScaleHandleGizmo.SCALE_X:
                 self.plane_normal = rot_mat.dot(np.array([0, 0, 1, 1]))[:3]
+                self.handle_dir = rot_mat.dot(np.array([1, 0, 0, 1]))[:3]
+            elif self.scale_axis == ScaleHandleGizmo.SCALE_Y:
+                self.plane_normal = rot_mat.dot(np.array([0, 0, 1, 1]))[:3]
+                self.handle_dir = rot_mat.dot(np.array([0, 1, 0, 1]))[:3]
+            else:
+                self.plane_normal = rot_mat.dot(np.array([1, 0, 0, 1]))[:3]
+                self.handle_dir = rot_mat.dot(np.array([0, 0, 1, 1]))[:3]

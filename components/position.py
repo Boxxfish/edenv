@@ -7,6 +7,7 @@ import numpy as np
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.rotate_ring_gizmo import RotateRingGizmo
+from tools.envedit.gizmos.scale_handle_gizmo import ScaleHandleGizmo
 from tools.envedit.gizmos.translate_arrow_gizmo import TranslateArrowGizmo
 from tools.envedit.property_type import PropertyType
 from tools.envedit.transform import Transform
@@ -24,6 +25,10 @@ class Position(EComponent):
         self.x_ring_gizmo = None
         self.y_ring_gizmo = None
         self.z_ring_gizmo = None
+
+        self.x_handle_gizmo = None
+        self.y_handle_gizmo = None
+        self.z_handle_gizmo = None
 
     # Called by scene editor to get this component's properties
     @staticmethod
@@ -67,6 +72,20 @@ class Position(EComponent):
             GizmoSystem.remove_gizmo(self.z_ring_gizmo)
             self.z_ring_gizmo.destroy()
             self.z_ring_gizmo = None
+
+        # Remove scale gizmos
+        if self.x_handle_gizmo is not None:
+            GizmoSystem.remove_gizmo(self.x_handle_gizmo)
+            self.x_handle_gizmo.destroy()
+            self.x_handle_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.y_handle_gizmo)
+            self.y_handle_gizmo.destroy()
+            self.y_handle_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.z_handle_gizmo)
+            self.z_handle_gizmo.destroy()
+            self.z_handle_gizmo = None
 
     # Called when component property is changed and the component is selected
     def on_gui_change_selected(self):
@@ -130,9 +149,33 @@ class Position(EComponent):
             self.z_ring_gizmo.rotate_callback = Position.handle_rotation
             self.z_ring_gizmo.rotate_finished_callback = Position.handle_finished_rotation
 
+        if self.x_handle_gizmo is None:
+            self.x_handle_gizmo = ScaleHandleGizmo(ScaleHandleGizmo.SCALE_X)
+            self.x_handle_gizmo.set_color((0.8, 0.2, 0.2, 1))
+            GizmoSystem.add_gizmo(self.x_handle_gizmo)
+            self.x_handle_gizmo.component = self
+            self.x_handle_gizmo.gen_plane_normal()
+            self.x_handle_gizmo.scale_callback = Position.handle_scale
+            self.x_handle_gizmo.scale_finished_callback = Position.handle_finished_scale
+
+            self.y_handle_gizmo = ScaleHandleGizmo(ScaleHandleGizmo.SCALE_Y)
+            self.y_handle_gizmo.set_color((0.2, 0.8, 0.2, 1))
+            GizmoSystem.add_gizmo(self.y_handle_gizmo)
+            self.y_handle_gizmo.component = self
+            self.y_handle_gizmo.gen_plane_normal()
+            self.y_handle_gizmo.scale_callback = Position.handle_scale
+            self.y_handle_gizmo.scale_finished_callback = Position.handle_finished_scale
+
+            self.z_handle_gizmo = ScaleHandleGizmo(ScaleHandleGizmo.SCALE_Z)
+            self.z_handle_gizmo.set_color((0.2, 0.2, 0.8, 1))
+            GizmoSystem.add_gizmo(self.z_handle_gizmo)
+            self.z_handle_gizmo.component = self
+            self.z_handle_gizmo.gen_plane_normal()
+            self.z_handle_gizmo.scale_callback = Position.handle_scale
+            self.z_handle_gizmo.scale_finished_callback = Position.handle_finished_scale
+
         node_world_pos = self.node.transform.get_world_translation()
-        node_rot_mat = self.node.transform.get_rot_mat(self.node.transform.get_rotation())
-        node_world_scale = self.node.transform.get_world_scale()
+        node_rot_mat = self.node.transform.get_rot_mat(self.node.transform.get_world_rotation())
 
         # Set arrow transforms
         x_transform = Transform()
@@ -154,19 +197,29 @@ class Position(EComponent):
 
         # Set rotation transforms
         x_rot_transform = Transform()
-        x_rot_transform.set_scale(1 / node_world_scale)
-        x_rot_transform.set_rotation(np.array([0, math.radians(90), 0]))
-        self.x_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(x_rot_transform.get_mat()))
+        x_rot_mat = x_rot_transform.get_trans_mat(node_world_pos).dot(node_rot_mat.dot(x_rot_transform.get_rot_mat(np.array([0, math.radians(90), 0]))))
+        self.x_ring_gizmo.set_world_matrix(x_rot_mat)
 
         y_rot_transform = Transform()
-        y_rot_transform.set_scale(1 / node_world_scale)
-        y_rot_transform.set_rotation(np.array([math.radians(90), 0, 0]))
-        self.y_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(y_rot_transform.get_mat()))
+        y_rot_mat = y_rot_transform.get_trans_mat(node_world_pos).dot(node_rot_mat.dot(y_rot_transform.get_rot_mat(np.array([math.radians(90), 0, 0]))))
+        self.y_ring_gizmo.set_world_matrix(y_rot_mat)
 
         z_rot_transform = Transform()
-        z_rot_transform.set_scale(1 / node_world_scale)
-        z_rot_transform.set_rotation(np.array([0, 0, math.radians(90)]))
-        self.z_ring_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(z_rot_transform.get_mat()))
+        z_rot_mat = z_rot_transform.get_trans_mat(node_world_pos).dot(node_rot_mat.dot(z_rot_transform.get_rot_mat(np.array([0, 0, math.radians(90)]))))
+        self.z_ring_gizmo.set_world_matrix(z_rot_mat)
+
+        # Set scale transforms
+        x_scale_transform = Transform()
+        x_handle_mat = x_scale_transform.get_trans_mat(node_world_pos).dot(node_rot_mat)
+        self.x_handle_gizmo.set_world_matrix(x_handle_mat)
+
+        y_scale_transform = Transform()
+        y_handle_mat = y_scale_transform.get_trans_mat(node_world_pos).dot(node_rot_mat.dot(y_scale_transform.get_rot_mat(np.array([0, 0, math.radians(90)]))))
+        self.y_handle_gizmo.set_world_matrix(y_handle_mat)
+
+        z_scale_transform = Transform()
+        z_handle_mat = y_scale_transform.get_trans_mat(node_world_pos).dot(node_rot_mat.dot(z_scale_transform.get_rot_mat(np.array([0, math.radians(-90), 0]))))
+        self.z_handle_gizmo.set_world_matrix(z_handle_mat)
 
     def on_gui_remove(self):
         # Remove translation gizmos
@@ -196,6 +249,20 @@ class Position(EComponent):
             GizmoSystem.remove_gizmo(self.z_ring_gizmo)
             self.z_ring_gizmo.destroy()
             self.z_ring_gizmo = None
+
+        # Remove scale gizmos
+        if self.x_handle_gizmo is not None:
+            GizmoSystem.remove_gizmo(self.x_handle_gizmo)
+            self.x_handle_gizmo.destroy()
+            self.x_handle_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.y_handle_gizmo)
+            self.y_handle_gizmo.destroy()
+            self.y_handle_gizmo = None
+
+            GizmoSystem.remove_gizmo(self.z_handle_gizmo)
+            self.z_handle_gizmo.destroy()
+            self.z_handle_gizmo = None
 
     def handle_translation(self, new_pos):
         # Update transform
@@ -234,6 +301,27 @@ class Position(EComponent):
         self.x_ring_gizmo.gen_plane_normal()
         self.y_ring_gizmo.gen_plane_normal()
         self.z_ring_gizmo.gen_plane_normal()
+
+        self.x_handle_gizmo.gen_plane_normal()
+        self.y_handle_gizmo.gen_plane_normal()
+        self.z_handle_gizmo.gen_plane_normal()
+
+    def handle_scale(self, new_scale):
+        # Update transform
+        self.node.transform.set_world_scale(new_scale)
+
+        # Set position component's properties
+        self.property_vals["scale_x"] = str(self.node.transform.scale[0])
+        self.property_vals["scale_y"] = str(self.node.transform.scale[1])
+        self.property_vals["scale_z"] = str(self.node.transform.scale[2])
+
+        self.node.component_property_changed_selected()
+
+    def handle_finished_scale(self):
+        if self.component_update_callback is not None:
+            self.component_update_callback("scale_x")
+            self.component_update_callback("scale_y")
+            self.component_update_callback("scale_z")
 
     # Called when the scene starts
     def start(self, properties):

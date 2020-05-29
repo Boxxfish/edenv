@@ -134,6 +134,15 @@ class Transform:
         self.scale = scale
         self.update()
 
+    # Sets the world scale of the transform
+    def set_world_scale(self, world_scale):
+        # Convert world scale to local
+        parent_transform = Transform()
+        parent_transform.set_matrix(self.parent_matrix)
+        scale_mat = np.linalg.inv(self.get_scale_mat(parent_transform.get_scale())).dot(self.get_scale_mat(world_scale))
+        self.scale = np.array([scale_mat[0][0], scale_mat[1][1], scale_mat[2][2]])
+        self.update()
+
     # Recalculates the internal local matrix from transform properties
     def recalculate(self):
         scale_mat = self.get_scale_mat(self.scale)
