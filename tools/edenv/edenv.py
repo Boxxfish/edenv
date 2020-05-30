@@ -28,6 +28,18 @@ def init(name):
         return
     copytree(source_path, project_path)
 
+    # Configure project.yaml
+    config_path = Path(f"{name}/project.yaml")
+    if not config_path.exists():
+        click.echo(f"Error: Could not find {name}/project.yaml.", err=True)
+        return
+    config = {}
+    with open(f"{name}/project.yaml", "r") as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+        config["project"] = name
+    with open(f"{name}/project.yaml", "w") as file:
+        yaml.dump(config, file)
+
     click.echo("Done.")
 
 

@@ -1,7 +1,8 @@
 ---
 # Configuration file for project
 
-envs: 
+project:
+envs:
 components:
  Position: components.position
  MeshGraphic: components.mesh_graphic
