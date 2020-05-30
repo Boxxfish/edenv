@@ -5,7 +5,9 @@ Envedit's toolbar.
 """
 from panda3d.core import NodePath
 
+from tools.envedit.envedit_data import EnveditData
 from tools.envedit.graph_node import GraphNode
+from tools.envedit.gui.gui_button import GUIButton
 from tools.envedit.gui.gui_dropdown import GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
@@ -20,7 +22,7 @@ class Toolbar(GUIFrame):
         self.envedit_data = None
 
         # GUI settings
-        self.bbox.height = 34
+        self.bbox.height = 64
         self.set_bg_color((0, 0, 0, 0.8))
 
         self.set_child(GUIStackLayout())
@@ -59,6 +61,42 @@ class Toolbar(GUIFrame):
         edit_dropdown.padding = 6
         buttons_layout.add_child(edit_dropdown)
 
+        middle_border = GUIFrame()
+        middle_border.set_bg_color((0.2, 0.2, 0.2, 1))
+        middle_border.bbox.height = 1
+        self.child.add_child(middle_border)
+
+        icons_layout = GUIStackLayout(vertical=False)
+        icons_layout.bbox.height = 28
+        self.child.add_child(icons_layout)
+
+        translate_button = GUIButton()
+        translate_button.bbox.width = 30
+        translate_button.bbox.height = 30
+        translate_button.set_normal_color((1, 1, 1, 0.9))
+        translate_button.set_pressed_color((0, 0, 0, 0.9))
+        translate_button.set_bg_image("translate_icon.png")
+        translate_button.on_click = self.translate_button_handler
+        icons_layout.add_child(translate_button)
+
+        rotate_button = GUIButton()
+        rotate_button.bbox.width = 30
+        rotate_button.bbox.height = 30
+        rotate_button.set_normal_color((1, 1, 1, 0.9))
+        rotate_button.set_pressed_color((0, 0, 0, 0.9))
+        rotate_button.set_bg_image("rotate_icon.png")
+        rotate_button.on_click = self.rotate_button_handler
+        icons_layout.add_child(rotate_button)
+
+        scale_button = GUIButton()
+        scale_button.bbox.width = 30
+        scale_button.bbox.height = 30
+        scale_button.set_normal_color((1, 1, 1, 0.9))
+        scale_button.set_pressed_color((0, 0, 0, 0.9))
+        scale_button.set_bg_image("scale_icon.png")
+        scale_button.on_click = self.scale_button_handler
+        icons_layout.add_child(scale_button)
+
         bottom_border = GUIFrame()
         bottom_border.set_bg_color((0.2, 0.2, 0.2, 1))
         bottom_border.bbox.height = 2
@@ -81,7 +119,7 @@ class Toolbar(GUIFrame):
             file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
 
             # Save file
-            if file_path is not "":
+            if file_path != "":
                 self.envedit_data.save(file_path)
         else:
             self.envedit_data.save()
@@ -92,9 +130,18 @@ class Toolbar(GUIFrame):
         file_path = filedialog.askopenfilename(filetypes=filetypes, defaultextension=filetypes)
 
         # Load file
-        if file_path is not "":
+        if file_path != "":
             for child in self.envedit_data.panda_root_node.children:
                 NodePath(child).removeNode()
             self.envedit_data.load(file_path)
 
         # TODO: When scene data is loaded, if the dirt flag is set, bring up save dialog
+
+    def translate_button_handler(self, button):
+        self.envedit_data.set_transform_gizmo(EnveditData.TRANSLATE_GIZMO)
+
+    def rotate_button_handler(self, button):
+        self.envedit_data.set_transform_gizmo(EnveditData.ROTATE_GIZMO)
+
+    def scale_button_handler(self, button):
+        self.envedit_data.set_transform_gizmo(EnveditData.SCALE_GIZMO)

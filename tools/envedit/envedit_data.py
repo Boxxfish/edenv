@@ -10,6 +10,10 @@ from tools.envedit.graph_node import GraphNode
 
 
 class EnveditData:
+    TRANSLATE_GIZMO = 0
+    ROTATE_GIZMO = 1
+    SCALE_GIZMO = 2
+
     envedit_data = None
 
     def __init__(self):
@@ -20,6 +24,7 @@ class EnveditData:
         self.project_name = None
         self.update_callback = None
         self.panda_root_node = None
+        self.selected_gizmo = EnveditData.TRANSLATE_GIZMO
         EnveditData.envedit_data = self
 
     # Updates the GUI after any change
@@ -64,4 +69,11 @@ class EnveditData:
         if self.target_node is not None:
             self.target_node.component_property_changed_selected()
 
+        self.update()
+
+    # Changes the selected transform gizmo
+    def set_transform_gizmo(self, transform_gizmo):
+        self.selected_gizmo = transform_gizmo
+        if self.target_node is not None:
+            self.target_node.component_property_changed_selected()
         self.update()
