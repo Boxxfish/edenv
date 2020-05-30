@@ -8,6 +8,7 @@ import sys
 import yaml
 from direct.showbase.ShowBase import ShowBase, DirectionalLight, PandaNode, WindowProperties
 from tools.envedit.camera_controller import CameraController
+from tools.envedit.center_panel import CenterPanel
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
@@ -15,6 +16,7 @@ from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
 from tools.envedit.envedit_data import EnveditData
+from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
@@ -94,6 +96,10 @@ class EnvEdit(ShowBase):
         self.toolbar = Toolbar()
         window_layout.set_child_dock(self.toolbar, GUIDockLayout.TOP)
         self.toolbar.set_envedit_data(self.envedit_data)
+
+        # Add empty center panel
+        self.center_panel = CenterPanel(self.cam_controller)
+        window_layout.set_child_dock(self.center_panel, GUIDockLayout.CENTER)
 
         self.update_gui()
 

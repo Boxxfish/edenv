@@ -23,6 +23,7 @@ class CameraController(DirectObject.DirectObject):
         self.cam_node = cam_node
         self.base = base
         self.render = render
+        self.cam_active = True
         self.delta_mouse = (0, 0)
         self.last_mouse = (0, 0)
 
@@ -43,7 +44,8 @@ class CameraController(DirectObject.DirectObject):
 
     # Scroll wheel button pressed handler
     def handle_scroll_pressed(self):
-        self.scroll_down = True
+        if self.cam_active:
+            self.scroll_down = True
 
     # Scroll wheel button released handler
     def handle_scroll_released(self):
@@ -51,15 +53,17 @@ class CameraController(DirectObject.DirectObject):
 
     # Scroll wheel up handler
     def handle_scroll_up(self):
-        delta_pos = self.forward * self.ZOOM_LEN
-        if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
-            self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
+        if self.cam_active:
+            delta_pos = self.forward * self.ZOOM_LEN
+            if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
+                self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
 
     # Scroll wheel down handler
     def handle_scroll_down(self):
-        delta_pos = self.forward * -self.ZOOM_LEN
-        if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
-            self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
+        if self.cam_active:
+            delta_pos = self.forward * -self.ZOOM_LEN
+            if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
+                self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
 
     # Shift button pressed handler
     def handle_shift_pressed(self):
