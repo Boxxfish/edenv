@@ -6,7 +6,6 @@ Handles importing and exporting Collada files.
 import json
 import shutil
 from pathlib import Path
-
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
 from tools.resimport.helper import resources_path
@@ -34,18 +33,46 @@ class ColladaImporter:
             shutil.copy(mat_path, resources_path / mat_path.name)
             mat_map[material.effect.id] = mat_path.name
 
+        # Export sub-tree
+        joint_node_dict = {}
+        root_node = ColladaImporter.process_scene(scene, joint_node_dict)
+        node_dict = GraphNode.scene_graph_to_dict(root_node)
+        with open(resources_path / f"{root_node.name}.json", "w") as file:
+            json.dump(node_dict, file)
+
+        # Process skinned meshes
+        skin_data = {}
+        node_list = []
+        for controller in collada_file.controllers:
+            joints = list(controller.sourcebyid[controller.joint_source])
+
+            joint_list = []
+            weight_list = []
+            for i in range(len(controller.joint_index)):
+                joint_indices = controller.joint_index[i]
+                vertex_joints = []
+                for joint_index in joint_indices:
+                    joint_node = joint_node_dict[joints[joint_index]]
+                    if joint_node not in node_list:
+                        node_list.append(joint_node)
+                    vertex_joints.append(node_list.index(joint_node))
+                joint_list.append(vertex_joints)
+
+                weight_indices = controller.weight_index[i]
+                vertex_weights = []
+                for weight_index in weight_indices:
+                    vertex_weights.append(list(controller.weights)[weight_index][0].item())
+                weight_list.append(vertex_weights)
+
+            skin_data[controller.geometry.id] = {"joints": joint_list, "weights": weight_list}
+
         # Export meshes
         for geometry in collada_file.geometries:
             # Create new mesh
-            new_mesh = {
-                "vertices": [],
-                "texcoords": [],
-                "normals": []
-            }
+            new_mesh = {}
             vertex_list = []
             texcoords_list = []
             normals_list = []
-
             for primitive in geometry.primitives:
                 # Set mesh's texture
                 if primitive.material in mat_map:
@@ -67,10 +94,13 @@ class ColladaImporter:
                     new_mesh["vertices"] = vertex_list
                     new_mesh["texcoords"] = texcoords_list
                     new_mesh["normals"] = normals_list
+                    new_mesh["joints"] = skin_data[geometry.id]["joints"]
+                    new_mesh["weights"] = skin_data[geometry.id]["weights"]
+                    new_mesh["nodes"] = node_list
 
             # Add metadata
             new_mesh["metadata"] = {
-                "version": "0.1",
+                "version": "0.2",
                 "type": "mesh"
             }
 
@@ -78,19 +108,13 @@ class ColladaImporter:
             with open(resources_path / f"{geometry.name}.json", "w") as file:
                 json.dump(new_mesh, file)
 
-        # Export sub-tree
-        root_node = ColladaImporter.process_scene(scene)
-        node_dict = GraphNode.scene_graph_to_dict(root_node)
-        with open(resources_path / f"{root_node.name}.json", "w") as file:
-            json.dump(node_dict, file)
-
     # Returns a node representation of the scene
     @staticmethod
-    def process_scene(scene_node):
+    def process_scene(scene_node, joint_node_dict):
         node = GraphNode(scene_node.id, [])
 
         for child in scene_node.nodes:
-            child_node = ColladaImporter.process_node(child)
+            child_node = ColladaImporter.process_node(child, joint_node_dict)
             if child_node is not None:
                 node.add_child(child_node)
 
@@ -98,10 +122,12 @@ class ColladaImporter:
 
     # Returns a node representation of a scene node
     @staticmethod
-    def process_node(scene_node):
+    def process_node(scene_node, joint_node_dict):
         node = GraphNode("Model Node", [])
         if hasattr(scene_node, "id") and scene_node.id is not None:
-            node.name = scene_node.id
+            node.name = scene_node.xmlnode.attrib["name"]
+            if "type" in scene_node.xmlnode.attrib:
+                joint_node_dict[scene_node.xmlnode.attrib["sid"]] = node.name
 
         # Add the transform of the node
         if hasattr(scene_node, "matrix"):
@@ -109,15 +135,15 @@ class ColladaImporter:
 
         # Add a Position component
         pos_component = EComponent.from_script("components.position")
-        pos_component.property_vals["pos_x"] = str(node.transform.trans[0].item())
-        pos_component.property_vals["pos_y"] = str(node.transform.trans[1].item())
-        pos_component.property_vals["pos_z"] = str(node.transform.trans[2].item())
-        pos_component.property_vals["rot_x"] = str(node.transform.rot[0].item())
-        pos_component.property_vals["rot_y"] = str(node.transform.rot[1].item())
-        pos_component.property_vals["rot_z"] = str(node.transform.rot[2].item())
-        pos_component.property_vals["scale_x"] = str(node.transform.scale[0].item())
-        pos_component.property_vals["scale_y"] = str(node.transform.scale[1].item())
-        pos_component.property_vals["scale_z"] = str(node.transform.scale[2].item())
+        pos_component.property_vals["pos_x"] = str((node.transform.trans[0].item() * 1000) / 1000)
+        pos_component.property_vals["pos_y"] = str((node.transform.trans[1].item() * 1000) / 1000)
+        pos_component.property_vals["pos_z"] = str((node.transform.trans[2].item() * 1000) / 1000)
+        pos_component.property_vals["rot_x"] = str((node.transform.rot[0].item() * 1000) / 1000)
+        pos_component.property_vals["rot_y"] = str((node.transform.rot[1].item() * 1000) / 1000)
+        pos_component.property_vals["rot_z"] = str((node.transform.rot[2].item() * 1000) / 1000)
+        pos_component.property_vals["scale_x"] = str((node.transform.scale[0].item() * 1000) / 1000)
+        pos_component.property_vals["scale_y"] = str((node.transform.scale[1].item() * 1000) / 1000)
+        pos_component.property_vals["scale_z"] = str((node.transform.scale[2].item() * 1000) / 1000)
         node.add_component(pos_component)
 
         # If scene_node is ExtraNode, return nothing
@@ -133,7 +159,7 @@ class ColladaImporter:
                     node.data.append(mesh_renderer)
                 else:
                     # Otherwise, treat it like a normal node
-                    child_node = ColladaImporter.process_node(child)
+                    child_node = ColladaImporter.process_node(child, joint_node_dict)
                     if child_node is not None:
                         node.add_child(child_node)
 
