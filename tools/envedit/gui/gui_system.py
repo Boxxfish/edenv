@@ -69,10 +69,18 @@ class GUISystem(DirectObject):
         if self.target_component is not None:
             self.target_component.handle_left_pressed()
 
+        # Force system to reset target component on next loop
+        self.cursor_x = -1
+        self.cursor_y = -1
+
     # Left mouse released event handler
     def handle_left_mouse_released(self):
         if self.target_component is not None:
             self.target_component.handle_left_released()
+
+        # Force system to reset target component on next loop
+        self.cursor_x = -1
+        self.cursor_y = -1
 
     # Right mouse pressed event handler
     def handle_right_mouse_pressed(self):
@@ -81,10 +89,18 @@ class GUISystem(DirectObject):
         if self.target_component is not None:
             self.target_component.handle_right_pressed()
 
+        # Force system to reset target component on next loop
+        self.cursor_x = -1
+        self.cursor_y = -1
+
     # Right mouse released event handler
     def handle_right_mouse_released(self):
         if self.target_component is not None:
             self.target_component.handle_right_released()
+
+        # Force system to reset target component on next loop
+        self.cursor_x = -1
+        self.cursor_y = -1
 
     # Keystroke event handler
     def handle_keystroke(self, key):

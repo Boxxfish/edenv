@@ -120,21 +120,37 @@ class GizmoSystem(DirectObject):
         if self.target_gizmo is not None:
             self.target_gizmo.handle_left_pressed()
 
+        # Force system to reset target component on next loop
+        self.mouse_x = -1
+        self.mouse_y = -1
+
     # Handles left mouse button released
     def handle_left_mouse_released(self):
         GizmoSystem.release_drag()
         if self.target_gizmo is not None:
             self.target_gizmo.handle_left_released()
 
+        # Force system to reset target component on next loop
+        self.mouse_x = -1
+        self.mouse_y = -1
+
     # Handles right mouse button pressed
     def handle_right_mouse_pressed(self):
         if self.target_gizmo is not None:
             self.target_gizmo.handle_right_pressed()
 
+        # Force system to reset target component on next loop
+        self.mouse_x = -1
+        self.mouse_y = -1
+
     # Handles right mouse button released
     def handle_right_mouse_released(self):
         if self.target_gizmo is not None:
             self.target_gizmo.handle_right_released()
+
+        # Force system to reset target component on next loop
+        self.mouse_x = -1
+        self.mouse_y = -1
 
     # Generates an object ID
     @staticmethod
