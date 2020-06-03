@@ -7,6 +7,8 @@ from pathlib import Path
 import sys
 import yaml
 from direct.showbase.ShowBase import ShowBase, DirectionalLight, PandaNode, WindowProperties
+from direct.task import Task
+
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.center_panel import CenterPanel
 from tools.envedit.component_viewer import ComponentViewer
@@ -101,6 +103,9 @@ class EnvEdit(ShowBase):
         self.center_panel = CenterPanel(self.cam_controller)
         window_layout.set_child_dock(self.center_panel, GUIDockLayout.CENTER)
 
+        # Add task to update nodes
+        self.add_task(self.update_nodes)
+
         self.update_gui()
 
     # Updates the GUI after a change to the scene
@@ -118,6 +123,17 @@ class EnvEdit(ShowBase):
         else:
             window_properties.setTitle(f"{dirty_marker}new_scene | {self.envedit_data.project_name}")
         self.win.requestProperties(window_properties)
+
+    # Updates the nodes every frame
+    def update_nodes(self, task):
+        self.update_node(self.envedit_data.scene_root)
+        return Task.cont
+
+    # Recursive function to update nodes
+    def update_node(self, node):
+        node.component_gui_update()
+        for child in node.children:
+            self.update_node(child)
 
 
 if __name__ == "__main__":

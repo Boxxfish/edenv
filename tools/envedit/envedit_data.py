@@ -55,8 +55,17 @@ class EnveditData:
             file_json = json.load(file)
             self.scene_root = GraphNode.dict_to_scene_graph(file_json)
 
+        self.init_node_components(self.scene_root)
+
         self.dirty = False
         self.update()
+
+    # Recursive function to update all components after graph is loaded
+    def init_node_components(self, node):
+        for child in node.children:
+            self.init_node_components(child)
+
+        node.component_property_changed()
 
     # Sets the target node
     def set_target_node(self, node):

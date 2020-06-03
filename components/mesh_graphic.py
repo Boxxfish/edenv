@@ -4,6 +4,8 @@ Renders a mesh.
 """
 import json
 from pathlib import Path
+
+from components.armature import Armature
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
@@ -17,11 +19,13 @@ class MeshGraphic(EComponent):
         EComponent.__init__(self)
         self.mesh = None
         self.mesh_gizmo = None
+        self.armature = None
 
     # Called by scene editor to get this component's properties
     @staticmethod
     def get_properties():
-        return {"mesh": PropertyType.FILE}
+        return {"mesh": PropertyType.FILE,
+                "armature_node": PropertyType.STRING}
 
     def on_gui_change(self):
         # Only change mesh if it's different
@@ -33,16 +37,25 @@ class MeshGraphic(EComponent):
             self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
+            armature_node = EnveditData.envedit_data.scene_root.find_child_by_name(self.property_vals["armature_node"])
+            if armature_node is not None:
+                for component in armature_node.data:
+                    if type(component) is Armature:
+                        self.armature = component
+
     def on_gui_change_selected(self):
         # Only change mesh if it's different
         if self.mesh is not self.property_vals["mesh"]:
             self.mesh = self.property_vals["mesh"]
             self.gen_mesh_gizmo(self.mesh)
 
-
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.get_geom().setColor((1, 1, 0, 1))
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
+
+    def on_gui_update(self):
+        if self.armature is not None:
+            self.mesh_gizmo.set_bone_matrices(self.armature.bone_mats)
 
     # Called when the component is removed
     def on_gui_remove(self):

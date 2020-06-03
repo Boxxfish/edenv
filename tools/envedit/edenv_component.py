@@ -32,6 +32,8 @@ class EComponent:
             return "Text"
         elif property_type == PropertyType.FILE:
             return "File Path"
+        elif property_type == PropertyType.ARRAY:
+            return [""]
 
     # Returns a dictionary with the values of the component
     def to_dict(self):
@@ -44,6 +46,9 @@ class EComponent:
         pass
 
     def on_gui_change_selected(self):
+        pass
+
+    def on_gui_update(self):
         pass
 
     def on_gui_remove(self):

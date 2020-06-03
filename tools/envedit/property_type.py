@@ -12,3 +12,5 @@ class PropertyType(Enum):
     BOOL = auto()
     STRING = auto()
     FILE = auto()
+    HIDDEN = auto()
+    ARRAY = auto()

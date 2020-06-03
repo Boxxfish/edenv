@@ -69,23 +69,30 @@ class GraphNode:
         for component in self.data:
             component.on_gui_change_selected()
 
+    # Triggers "on_gui_update" on all attached components
+    def component_gui_update(self):
+        for component in self.data:
+            component.on_gui_update()
+
     # Finds a child node in the graph
     def find_child(self, node):
         if self is node:
             return self
         for child in self.children:
             result = child.find_child(node)
-            if child is not None:
-                return child
+            if result is not None:
+                return result
+        return None
 
     # Finds a child node in the graph by name
     def find_child_by_name(self, name):
-        if self.name is name:
+        if self.name == name:
             return self
         for child in self.children:
-            result = child.find_child(name)
-            if child is not None:
-                return child
+            result = child.find_child_by_name(name)
+            if result is not None:
+                return result
+        return None
 
     # Handles a matrix update
     def on_matrix_update(self, matrix):

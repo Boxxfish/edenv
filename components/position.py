@@ -46,6 +46,8 @@ class Position(EComponent):
 
     # Called when component property is changed and the component isn't selected
     def on_gui_change(self):
+        self.node.transform.update()
+
         # Remove translation gizmos
         if self.x_arrow_gizmo is not None:
             self.remove_translate_gizmos()

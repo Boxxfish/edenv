@@ -5,7 +5,13 @@ Handles importing and exporting Collada files.
 """
 import json
 import shutil
+import string
 from pathlib import Path
+
+import numpy as np
+from collada.scene import Scene
+
+from components.armature import Armature
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
 from tools.resimport.helper import resources_path
@@ -33,26 +39,20 @@ class ColladaImporter:
             shutil.copy(mat_path, resources_path / mat_path.name)
             mat_map[material.effect.id] = mat_path.name
 
-        # Export sub-tree
-        joint_node_dict = {}
-        root_node = ColladaImporter.process_scene(scene, joint_node_dict)
-        node_dict = GraphNode.scene_graph_to_dict(root_node)
-        with open(resources_path / f"{root_node.name}.json", "w") as file:
-            json.dump(node_dict, file)
-
         # Process skinned meshes
         skin_data = {}
         node_list = []
+        bind_mats = []
         for controller in collada_file.controllers:
             joints = list(controller.sourcebyid[controller.joint_source])
-
             joint_list = []
             weight_list = []
             for i in range(len(controller.joint_index)):
                 joint_indices = controller.joint_index[i]
                 vertex_joints = []
+
                 for joint_index in joint_indices:
-                    joint_node = joint_node_dict[joints[joint_index]]
+                    joint_node = joints[joint_index]
                     if joint_node not in node_list:
                         node_list.append(joint_node)
                     vertex_joints.append(node_list.index(joint_node))
@@ -73,6 +73,8 @@ class ColladaImporter:
             vertex_list = []
             texcoords_list = []
             normals_list = []
+            joints_list = []
+            weights_list = []
             for primitive in geometry.primitives:
                 # Set mesh's texture
                 if primitive.material in mat_map:
@@ -91,12 +93,17 @@ class ColladaImporter:
                         for coord in normal:
                             normals_list.append(coord.item())
 
-                    new_mesh["vertices"] = vertex_list
-                    new_mesh["texcoords"] = texcoords_list
-                    new_mesh["normals"] = normals_list
-                    new_mesh["joints"] = skin_data[geometry.id]["joints"]
-                    new_mesh["weights"] = skin_data[geometry.id]["weights"]
-                    new_mesh["nodes"] = node_list
+                    # Go over weights
+                    for index in tri.indices:
+                        joints_list.append(skin_data[geometry.id]["joints"][index])
+                        weights_list.append(skin_data[geometry.id]["weights"][index])
+
+                new_mesh["vertices"] = vertex_list
+                new_mesh["texcoords"] = texcoords_list
+                new_mesh["normals"] = normals_list
+                new_mesh["joints"] = joints_list
+                new_mesh["weights"] = weights_list
+                new_mesh["nodes"] = node_list
 
             # Add metadata
             new_mesh["metadata"] = {
@@ -105,29 +112,31 @@ class ColladaImporter:
             }
 
             # Export JSON files
-            with open(resources_path / f"{geometry.name}.json", "w") as file:
-                json.dump(new_mesh, file)
+            with open(resources_path / f"{geometry.name}.json", "w") as mesh_file:
+                json.dump(new_mesh, mesh_file)
 
-    # Returns a node representation of the scene
-    @staticmethod
-    def process_scene(scene_node, joint_node_dict):
-        node = GraphNode(scene_node.id, [])
-
-        for child in scene_node.nodes:
-            child_node = ColladaImporter.process_node(child, joint_node_dict)
-            if child_node is not None:
-                node.add_child(child_node)
-
-        return node
+        # Export sub-tree
+        joint_node_dict = {}
+        root_node = ColladaImporter.process_node(scene, np.identity(4), joint_node_dict, node_list)
+        node_dict = GraphNode.scene_graph_to_dict(root_node)
+        with open(resources_path / f"{Path(file.name).stem}.json", "w") as scene_file:
+            json.dump(node_dict, scene_file)
 
     # Returns a node representation of a scene node
     @staticmethod
-    def process_node(scene_node, joint_node_dict):
+    def process_node(scene_node, parent_mat, joint_node_dict, node_list):
         node = GraphNode("Model Node", [])
-        if hasattr(scene_node, "id") and scene_node.id is not None:
+        if "name" in scene_node.xmlnode.attrib:
             node.name = scene_node.xmlnode.attrib["name"]
-            if "type" in scene_node.xmlnode.attrib:
-                joint_node_dict[scene_node.xmlnode.attrib["sid"]] = node.name
+
+        # Register joint
+        if "type" in scene_node.xmlnode.attrib and scene_node.xmlnode.attrib["type"].lower() == "joint":
+            bind_mat = np.linalg.inv(parent_mat.dot(scene_node.matrix))
+            bind_array = []
+            for y in range(4):
+                for x in range(4):
+                    bind_array.append(str(bind_mat[y][x]))
+            joint_node_dict[scene_node.xmlnode.attrib["sid"]] = {"name": node.name, "bind_mat": ",".join(bind_array)}
 
         # Add the transform of the node
         if hasattr(scene_node, "matrix"):
@@ -135,32 +144,47 @@ class ColladaImporter:
 
         # Add a Position component
         pos_component = EComponent.from_script("components.position")
-        pos_component.property_vals["pos_x"] = str((node.transform.trans[0].item() * 1000) / 1000)
-        pos_component.property_vals["pos_y"] = str((node.transform.trans[1].item() * 1000) / 1000)
-        pos_component.property_vals["pos_z"] = str((node.transform.trans[2].item() * 1000) / 1000)
-        pos_component.property_vals["rot_x"] = str((node.transform.rot[0].item() * 1000) / 1000)
-        pos_component.property_vals["rot_y"] = str((node.transform.rot[1].item() * 1000) / 1000)
-        pos_component.property_vals["rot_z"] = str((node.transform.rot[2].item() * 1000) / 1000)
-        pos_component.property_vals["scale_x"] = str((node.transform.scale[0].item() * 1000) / 1000)
-        pos_component.property_vals["scale_y"] = str((node.transform.scale[1].item() * 1000) / 1000)
-        pos_component.property_vals["scale_z"] = str((node.transform.scale[2].item() * 1000) / 1000)
+        pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
+        pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
+        pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
+        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
+        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
+        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
+        pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
+        pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
+        pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)
         node.add_component(pos_component)
 
-        # If scene_node is ExtraNode, return nothing
-        if type(scene_node) == collada.scene.ExtraNode:
-            return None
+        # Propagate to children
+        if hasattr(scene_node, "children") or hasattr(scene_node, "nodes"):
+            children = scene_node.nodes if isinstance(scene_node, Scene) else scene_node.children
+            for child in children:
 
-        if hasattr(scene_node, "children"):
-            for child in scene_node.children:
-                # If child holds a mesh, add a MeshGraphic to this node
-                if hasattr(child, "controller"):
-                    mesh_renderer = EComponent.from_script("components.mesh_graphic")
-                    mesh_renderer.property_vals["mesh"] = child.controller.geometry.name
-                    node.data.append(mesh_renderer)
-                else:
-                    # Otherwise, treat it like a normal node
-                    child_node = ColladaImporter.process_node(child, joint_node_dict)
-                    if child_node is not None:
-                        node.add_child(child_node)
+                child_node = ColladaImporter.process_node(child, parent_mat if not hasattr(scene_node, "matrix") else parent_mat.dot(scene_node.matrix), joint_node_dict, node_list)
+
+                if child_node is not None:
+
+                    # If child is ExtraNode or LightNode, skip the child
+                    if isinstance(child, collada.scene.ExtraNode) or isinstance(child, collada.scene.LightNode):
+                        continue
+
+                    # If child holds a mesh, add a MeshGraphic to node and skip the child
+                    if hasattr(child, "controller"):
+                        mesh_renderer = EComponent.from_script("components.mesh_graphic")
+                        mesh_renderer.property_vals["mesh"] = child.controller.geometry.name
+                        mesh_renderer.property_vals["armature_node"] = joint_node_dict[child.controller.sourcebyid[child.controller.joint_source][0]]["name"]
+                        node.data.append(mesh_renderer)
+                        continue
+
+                    # If child is a joint and this node isn't, add an armature to the child
+                    parent_attrib = scene_node.xmlnode.attrib
+                    child_attrib = child.xmlnode.attrib
+                    if ("type" not in parent_attrib or parent_attrib["type"].lower() != "joint") and ("type" in child_attrib and child_attrib["type"].lower() == "joint"):
+                        armature = EComponent.from_script("components.armature")
+                        armature.property_vals["nodes"] = [joint_node_dict[joint_name]["name"] for joint_name in node_list]
+                        armature.property_vals["bind_matrices"] = [joint_node_dict[joint_name]["bind_mat"] for joint_name in node_list]
+                        child_node.data.append(armature)
+
+                    node.add_child(child_node)
 
         return node
