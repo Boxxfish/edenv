@@ -28,12 +28,6 @@ class MeshGizmo(Gizmo):
         self.on_pressed_callback = None
         self.on_released_callback = None
 
-        # Load skinned shader
-        shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/shaders"
-        self.skinned_shader = Shader.load(Shader.SL_GLSL,
-                                          vertex=Filename(shader_folder_path / "skinned.vert").cStr(),
-                                          fragment=Filename(shader_folder_path / "skinned.frag").cStr())
-
         if mesh_json is not None:
             self.gen_geom(mesh_json)
 
@@ -144,7 +138,7 @@ class MeshGizmo(Gizmo):
 
         # Set shader
         if has_weights:
-            self.geom_path.set_shader(self.skinned_shader)
+            self.geom_path.setTag("skinned", "True")
             bone_mats = PTA_LMatrix4f()
             for _ in range(100):
                 bone_mats.push_back(helper.np_mat4_to_panda(np.identity(4)))

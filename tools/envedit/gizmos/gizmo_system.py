@@ -53,7 +53,8 @@ class GizmoSystem(DirectObject):
         self.accept("mouse3", self.handle_right_mouse_pressed)
         self.accept("mouse3-up", self.handle_right_mouse_released)
 
-        self.accept("v", self.base.bufferViewer.toggleEnable)
+        # DEBUG: View color picking framebuffer
+        # self.accept("v", self.base.bufferViewer.toggleEnable)
 
         # Remove background from selection
         GizmoSystem.gizmos[0] = 1

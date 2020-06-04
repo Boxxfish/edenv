@@ -3,12 +3,15 @@ Environment editor for EDEnv.
 
 @author Ben Giacalone
 """
+from os import path
 from pathlib import Path
 import sys
+import numpy as np
 import yaml
-from direct.showbase.ShowBase import ShowBase, DirectionalLight, PandaNode, WindowProperties
+from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-
+from panda3d.core import Shader, Filename, PTA_LMatrix4f, PandaNode, DirectionalLight, NodePath, WindowProperties
+from tools.envedit import helper
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.center_panel import CenterPanel
 from tools.envedit.component_viewer import ComponentViewer
@@ -18,7 +21,6 @@ from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.graph_viewer import GraphViewer
 from tools.envedit.envedit_data import EnveditData
-from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_font_loader import GUIFontLoader
 from tools.envedit.gui.gui_system import GUISystem
@@ -79,6 +81,17 @@ class EnvEdit(ShowBase):
         floor_path = self.render.attach_new_node(self.floor_node)
         floor_path.setTwoSided(True)
         floor_path.set_shader_input("object_id", 0)
+
+        # Load skinned shader
+        shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent / "res/shaders"
+        skinned_shader = Shader.load(Shader.SL_GLSL,
+                                     vertex=Filename(shader_folder_path / "skinned.vert").cStr(),
+                                     fragment=Filename(shader_folder_path / "skinned.frag").cStr())
+
+        skinned_render_state = NodePath("")
+        skinned_render_state.set_shader(skinned_shader)
+        self.cam.node().setTagStateKey("skinned")
+        self.cam.node().setTagState("True", skinned_render_state.get_state())
 
         # Add camera controller
         self.cam_controller = CameraController(self, self.render, self.camera)
