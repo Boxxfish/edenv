@@ -182,6 +182,18 @@ class ColladaImporter:
                         mesh_renderer.property_vals["mesh"] = folder_name + "/" + child.controller.geometry.name
                         mesh_renderer.property_vals["armature_node"] = joint_node_dict[child.controller.sourcebyid[child.controller.joint_source][0]]["name"]
                         node.data.append(mesh_renderer)
+
+                        # Set bind shape matrix
+                        node.transform.set_matrix(child.controller.bind_shape_matrix)
+                        pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
+                        pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
+                        pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
+                        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
+                        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
+                        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
+                        pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
+                        pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
+                        pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)
                         continue
 
                     # If child is a joint and this node isn't, add an armature to the child
