@@ -4,6 +4,7 @@ Handles importing and exporting Collada files.
 @author Ben Giacalone
 """
 import json
+import os
 import shutil
 import string
 from pathlib import Path
@@ -31,14 +32,19 @@ class ColladaImporter:
         collada_file = Collada(file)
         scene = collada_file.scene
 
+        # Create folder to store resources
+        folder_path = resources_path / Path(file.name).stem
+        if not folder_path.exists():
+            os.mkdir(folder_path)
+
         # Export textures
         mat_map = {}
         model_folder_path = Path(file.name).parent
         for material in collada_file.materials:
             if hasattr(material.effect.diffuse, "sampler"):
                 mat_path = model_folder_path / Path(material.effect.diffuse.sampler.surface.image.path)
-                shutil.copy(mat_path, resources_path / mat_path.name)
-                mat_map[material.effect.id] = mat_path.name
+                shutil.copy(mat_path, folder_path / mat_path.name)
+                mat_map[material.effect.id] = Path(file.name).stem + "/" + mat_path.name
 
         # Process skinned meshes
         skin_data = {}
@@ -114,19 +120,19 @@ class ColladaImporter:
             }
 
             # Export JSON files
-            with open(resources_path / f"{geometry.name}.json", "w") as mesh_file:
+            with open(folder_path / f"{geometry.name}.json", "w") as mesh_file:
                 json.dump(new_mesh, mesh_file)
 
         # Export sub-tree
         joint_node_dict = {}
-        root_node = ColladaImporter.process_node(scene, np.identity(4), joint_node_dict, node_list)
+        root_node = ColladaImporter.process_node(scene, np.identity(4), joint_node_dict, node_list, Path(file.name).stem)
         node_dict = GraphNode.scene_graph_to_dict(root_node)
-        with open(resources_path / f"{Path(file.name).stem}.json", "w") as scene_file:
+        with open(folder_path / f"{Path(file.name).stem}.json", "w") as scene_file:
             json.dump(node_dict, scene_file)
 
     # Returns a node representation of a scene node
     @staticmethod
-    def process_node(scene_node, parent_mat, joint_node_dict, node_list):
+    def process_node(scene_node, parent_mat, joint_node_dict, node_list, folder_name):
         node = GraphNode("Model Node", [])
         if "name" in scene_node.xmlnode.attrib:
             node.name = scene_node.xmlnode.attrib["name"]
@@ -162,7 +168,7 @@ class ColladaImporter:
             children = scene_node.nodes if isinstance(scene_node, Scene) else scene_node.children
             for child in children:
 
-                child_node = ColladaImporter.process_node(child, parent_mat if not hasattr(scene_node, "matrix") else parent_mat.dot(scene_node.matrix), joint_node_dict, node_list)
+                child_node = ColladaImporter.process_node(child, parent_mat if not hasattr(scene_node, "matrix") else parent_mat.dot(scene_node.matrix), joint_node_dict, node_list, folder_name)
 
                 if child_node is not None:
 
@@ -173,7 +179,7 @@ class ColladaImporter:
                     # If child holds a mesh, add a MeshGraphic to node and skip the child
                     if hasattr(child, "controller"):
                         mesh_renderer = EComponent.from_script("components.mesh_graphic")
-                        mesh_renderer.property_vals["mesh"] = child.controller.geometry.name
+                        mesh_renderer.property_vals["mesh"] = folder_name + "/" + child.controller.geometry.name
                         mesh_renderer.property_vals["armature_node"] = joint_node_dict[child.controller.sourcebyid[child.controller.joint_source][0]]["name"]
                         node.data.append(mesh_renderer)
                         continue
