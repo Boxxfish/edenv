@@ -20,7 +20,7 @@ class GUITextBox(GUIFrame):
         self.padding = 4
         self.text = ""
         self.normal_color = (1, 1, 1, 0.2)
-        self.focus_color = (1, 1, 1, 0.3)
+        self.focus_color = (0.6, 0.6, 0.6, 0.2)
         self.normal_text_color = (1, 1, 1, 1)
         self.invalid_text_color = (1, 0, 0, 1)
         self.curr_text_color = self.normal_text_color
@@ -33,13 +33,13 @@ class GUITextBox(GUIFrame):
         self.validate_text = None       # Called to check if text is in correct format
         self.data = None
 
-    def update(self):
+    def update(self, parent_bbox):
         # This is more complicated than it should be... figure out why we can't just check for self.focused
         if self.focused and self.child is not None and len(self.child.children) > 0:
             self.child.children[0].set_text(self.text[:self.cursor_pos])
             self.child.children[2].set_text(self.text[self.cursor_pos:])
 
-        GUIFrame.update(self)
+        GUIFrame.update(self, self.bbox)
 
     # Sets the child element to a single text label
     def use_single_label(self):
@@ -49,7 +49,7 @@ class GUITextBox(GUIFrame):
         self.child.set_text_color(self.curr_text_color)
         self.child.receive_events = False
         self.child.set_text(self.text)
-        self.update()
+        self.update(self.bbox)
 
     # Sets the child element to a stack of text labels (for rendering the cursor)
     def use_stacked_labels(self):
@@ -74,7 +74,7 @@ class GUITextBox(GUIFrame):
         second_label.receive_events = False
         self.child.add_child(second_label)
 
-        self.update()
+        self.update(self.bbox)
 
     def set_text(self, text):
         # Validate text
@@ -97,7 +97,7 @@ class GUITextBox(GUIFrame):
         else:
             self.curr_text_color = self.invalid_text_color
         self.set_text_color(self.curr_text_color)
-        self.update()
+        self.update(self.bbox)
 
     def set_text_color(self, color):
         if self.focused:
@@ -130,18 +130,18 @@ class GUITextBox(GUIFrame):
             if self.cursor_pos != 0:
                 self.set_text(self.text[:self.cursor_pos - 1] + self.text[self.cursor_pos:])
                 self.cursor_pos -= 1
-                self.update()
+                self.update(self.bbox)
         elif key == "arrow_left":
             if self.cursor_pos != 0:
                 self.cursor_pos -= 1
-                self.update()
+                self.update(self.bbox)
         elif key == "arrow_right":
             if self.cursor_pos != len(self.text):
                 self.cursor_pos += 1
-                self.update()
+                self.update(self.bbox)
         elif key == "delete":
             if self.cursor_pos != len(self.text):
                 self.set_text(self.text[:self.cursor_pos] + self.text[self.cursor_pos + 1:])
-                self.update()
+                self.update(self.bbox)
         elif key == "enter":
             GUISystem.release_focus()

@@ -33,19 +33,23 @@ class GUINumberBox(GUIFrame):
         layout.set_child_dock(self.text_box, GUIDockLayout.CENTER)
 
         button_layout = GUIStackLayout()
-        button_layout.bbox.width = 20
+        button_layout.bbox.width = 10
         layout.set_child_dock(button_layout, GUIDockLayout.RIGHT)
 
         up_button = GUIButton()
         up_button.bbox.height = 10
-        up_button.bbox.width = 20
+        up_button.bbox.width = 10
+        up_button.set_normal_color((0.8, 0.8, 0.8, 0.9))
+        up_button.set_pressed_color((0, 0, 0, 0.9))
         up_button.on_click = self.up_arrow_pressed
         up_button.set_bg_image("up_arrow.png")
         button_layout.add_child(up_button)
 
         down_button = GUIButton()
         down_button.bbox.height = 10
-        down_button.bbox.width = 20
+        down_button.bbox.width = 10
+        down_button.set_normal_color((0.8, 0.8, 0.8, 0.9))
+        down_button.set_pressed_color((0, 0, 0, 0.9))
         down_button.on_click = self.down_arrow_pressed
         down_button.set_bg_image("down_arrow.png")
         button_layout.add_child(down_button)

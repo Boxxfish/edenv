@@ -8,6 +8,7 @@ import string
 from direct.showbase.DirectObject import DirectObject
 from direct.task import Task
 
+from tools.envedit.gui.bounding_box import BoundingBox
 from tools.envedit.gui.gui_context_menu import GUIContextMenu
 from tools.envedit.gui.panda_gui_utils import GUIUtils
 from tools.envedit.gui.gui_window import GUIWindow
@@ -162,7 +163,7 @@ class GUISystem(DirectObject):
     # This should NEVER be called from a component's update
     @staticmethod
     def update_all():
-        GUISystem.gui_system.window.update()
+        GUISystem.gui_system.window.update(BoundingBox())
 
     # Creates a context menu at the current cursor location
     # Returns a component

@@ -20,32 +20,32 @@ class GUIComponent:
         self.child = child
         if self.rendering:
             self.child.add_render()
-        self.update()
+        self.update(self.bbox)
 
     # Removes the child of the component
     def remove_child(self):
         self.child.stop_render()
         self.child = None
-        self.update()
+        self.update(self.bbox)
 
     # Updates the component after a change
-    def update(self):
+    def update(self, parent_bbox):
         if self.child is not None:
-            self.child.update()
+            self.child.update(self.bbox)
 
     # Removes the element and its child(ren) from the render tree
     def stop_render(self):
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.update()
+        self.update(self.bbox)
 
     # Adds the element and its child(ren) to the render tree
     def add_render(self):
         self.rendering = True
         if self.child is not None:
             self.child.add_render()
-        self.update()
+        self.update(self.bbox)
 
     # Checks if this component contains a point in screen space, then propagates to child
     def get_selected_component(self, x, y):

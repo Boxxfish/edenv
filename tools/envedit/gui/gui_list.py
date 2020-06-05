@@ -49,9 +49,9 @@ class GUIList(GUIComponent):
         for list_item in parent.sub_list:
             self.remove_item(list_item)
 
-    def update(self):
+    def update(self, parent_bbox):
         self.child.bbox.x = self.bbox.x
         self.child.bbox.y = self.bbox.y
         self.child.bbox.width = self.bbox.width
-        self.child.update()
+        self.child.update(self.bbox)
         self.bbox.height = self.child.bbox.height

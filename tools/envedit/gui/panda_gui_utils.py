@@ -30,6 +30,17 @@ class GUIUtils:
 
         return new_x, new_y, new_width, new_height
 
+    # Transforms an EDEnv bbox Panda3d clipping bbox
+    @staticmethod
+    def get_panda_clip_coords(x, y, width, height):
+        # Calculate Panda3d bounding box
+        new_width = width / GUIUtils.window_width
+        new_height = height / GUIUtils.window_height
+        new_x = x / GUIUtils.window_width
+        new_y = 1 - y / GUIUtils.window_height
+
+        return new_x, new_y, new_width, new_height
+
     # Transforms an EDEnv bbox into a Panda3d text bbox
     @staticmethod
     def get_panda_text_coords(x, y, width, height):

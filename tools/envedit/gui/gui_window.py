@@ -3,6 +3,7 @@ Represents a window to render GUI components to.
 
 @author Ben Giacalone
 """
+from tools.envedit.gui.bounding_box import BoundingBox
 from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_free_layout import GUIFreeLayout
 
@@ -18,14 +19,14 @@ class GUIWindow(GUIComponent):
     def window_resized(self, width, height):
         self.bbox.width = width
         self.bbox.height = height
-        self.update()
+        self.update(BoundingBox())
 
-    def update(self):
+    def update(self, parent_bbox):
         self.context_menu_layer.bbox = self.bbox.copy()
-        self.context_menu_layer.update()
+        self.context_menu_layer.update(self.bbox)
         if self.child is not None:
             self.child.bbox = self.bbox.copy()
-            self.child.update()
+            self.child.update(self.bbox)
 
     def get_selected_component(self, x, y):
         if self.bbox.point_inside(x, y) and self.receive_events:
@@ -44,7 +45,7 @@ class GUIWindow(GUIComponent):
         self.context_menu_layer.stop_render()
         if self.child is not None:
             self.child.stop_render()
-        self.update()
+        self.update(BoundingBox())
 
     # Adds the element and its child(ren) to the render tree
     def add_render(self):
@@ -52,4 +53,4 @@ class GUIWindow(GUIComponent):
         self.context_menu_layer.add_render()
         if self.child is not None:
             self.child.add_render()
-        self.update()
+        self.update(BoundingBox())

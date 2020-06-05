@@ -7,6 +7,8 @@ from os import path
 from pathlib import Path
 
 from direct.gui.DirectFrame import DirectFrame, Filename
+from panda3d.core import ScissorEffect, LVector4f, ScissorAttrib
+
 from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.panda_gui_utils import GUIUtils
 
@@ -25,24 +27,34 @@ class GUIFrame(GUIComponent):
     # Sets background color
     def set_bg_color(self, bg_color):
         self.bg_color = bg_color
-        self.update()
+        self.update(self.bbox)
 
     # Sets the background image
     def set_bg_image(self, image_path):
         image_folder_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/images"
         self.bg_image = Filename(image_folder_path / image_path).cStr()
-        self.update()
+        self.update(self.bbox)
 
     # Default behavior is to fill in the bounding box with bg color
-    def update(self):
+    def update(self, parent_bbox):
         if self.frame is not None:
+            # Set background color and texture
             self.frame["frameColor"] = self.bg_color
             if self.bg_image is not None:
                 self.frame["frameTexture"] = self.bg_image
+
+            # Set bbox
             x, y, width, height = GUIUtils.get_panda_coords(self.bbox.x, self.bbox.y, self.bbox.width, self.bbox.height)
             self.frame.setPos(x, 0, y)
             self.frame["frameSize"] = (-width / 2, width / 2, -height / 2, height / 2)
             self.frame.resetFrameSize()
+
+            # Set up scissor test
+            clip_x, clip_y, clip_w, clip_h = GUIUtils.get_panda_clip_coords(parent_bbox.x, parent_bbox.y, parent_bbox.width, parent_bbox.height)
+            render_attrib = ScissorAttrib.make(LVector4f(clip_x, clip_x + clip_w, clip_y - clip_h, clip_y))
+            self.frame.setAttrib(render_attrib)
+
+            # Adjust child bbox
             if self.child is not None:
                 self.child.bbox.x = self.bbox.x + self.padding
                 self.child.bbox.y = self.bbox.y + self.padding
@@ -55,14 +67,14 @@ class GUIFrame(GUIComponent):
                 else:
                     self.child.bbox.height = self.bbox.height - 2 * self.padding
 
-                self.child.update()
+                self.child.update(self.bbox)
 
     def add_render(self):
         self.rendering = True
         self.frame = DirectFrame(frameSize=(-1, 1, 1, -1))
         if self.child is not None:
             self.child.add_render()
-        self.update()
+        self.update(self.bbox)
 
     def stop_render(self):
         if self.rendering:
@@ -71,4 +83,4 @@ class GUIFrame(GUIComponent):
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.update()
+        self.update(self.bbox)
