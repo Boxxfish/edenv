@@ -42,6 +42,7 @@ class RotateRingGizmo(MeshGizmo):
 
         # Generate mesh (renders on top of everything else)
         MeshGizmo.gen_geom(self, ring_json)
+        self.geom_path.setTag("shader type", "gizmo")
         self.get_geom().setColor(self.color)
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)

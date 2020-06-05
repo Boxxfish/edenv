@@ -3,10 +3,12 @@ Controls the camera.
 
 @author Ben Giacalone
 """
+from os import path
+from pathlib import Path
 
 from direct.showbase import DirectObject
 from direct.task import Task
-from panda3d.core import LVector3f, OrthographicLens
+from panda3d.core import LVector3f, OrthographicLens, NodePath, ShaderAttrib, Shader, Filename
 import math
 
 
@@ -26,6 +28,28 @@ class CameraController(DirectObject.DirectObject):
         self.cam_active = True
         self.delta_mouse = (0, 0)
         self.last_mouse = (0, 0)
+
+        # Load skinned shader
+        self.base.cam.node().setTagStateKey("shader type")
+
+        shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent / "res/shaders"
+        self.skinned_shader = Shader.load(Shader.SL_GLSL,
+                                          vertex=Filename(shader_folder_path / "skinned.vert").cStr(),
+                                          fragment=Filename(shader_folder_path / "skinned.frag").cStr())
+
+        skinned_render_state = NodePath("")
+        skinned_render_state.set_shader(self.skinned_shader)
+        self.base.cam.node().setTagState("skinned", skinned_render_state.get_state())
+
+        # Load gizmo shader
+        self.gizmo_shader = Shader.load(Shader.SL_GLSL,
+                                        vertex=Filename(shader_folder_path / "gizmo.vert").cStr(),
+                                        fragment=Filename(shader_folder_path / "gizmo.frag").cStr())
+
+        gizmo_render_state = NodePath("")
+        gizmo_render_state.set_shader(self.gizmo_shader)
+        self.base.render.set_shader_input("cam_pos", self.cam_node.getPos())
+        self.base.cam.node().setTagState("gizmo", gizmo_render_state.get_state())
 
         # Register events
         self.accept("mouse2", self.handle_scroll_pressed)
@@ -58,12 +82,18 @@ class CameraController(DirectObject.DirectObject):
             if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
                 self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
 
+                # Update camera position in shader
+                self.base.render.set_shader_input("cam_pos", self.cam_node.getPos())
+
     # Scroll wheel down handler
     def handle_scroll_down(self):
         if self.cam_active:
             delta_pos = self.forward * -self.ZOOM_LEN
             if (self.cam_node.getPos() + delta_pos).length() >= self.ZOOM_LEN:
                 self.cam_node.setPos(self.cam_node.getPos() + delta_pos)
+
+                # Update camera position in shader
+                self.base.render.set_shader_input("cam_pos", self.cam_node.getPos())
 
     # Shift button pressed handler
     def handle_shift_pressed(self):
@@ -118,6 +148,9 @@ class CameraController(DirectObject.DirectObject):
         self.cam_node.setPos(new_pos)
         self.forward = (-self.cam_node.getPos()).normalized()
         self.cam_node.lookAt(0, 0, 0)
+
+        # Update camera position in shader
+        self.base.render.set_shader_input("cam_pos", new_pos)
 
     # "Destructor" for camera controller
     def destroy(self):

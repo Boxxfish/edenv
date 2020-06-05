@@ -35,9 +35,10 @@ class ColladaImporter:
         mat_map = {}
         model_folder_path = Path(file.name).parent
         for material in collada_file.materials:
-            mat_path = model_folder_path / Path(material.effect.diffuse.sampler.surface.image.path)
-            shutil.copy(mat_path, resources_path / mat_path.name)
-            mat_map[material.effect.id] = mat_path.name
+            if hasattr(material.effect.diffuse, "sampler"):
+                mat_path = model_folder_path / Path(material.effect.diffuse.sampler.surface.image.path)
+                shutil.copy(mat_path, resources_path / mat_path.name)
+                mat_map[material.effect.id] = mat_path.name
 
         # Process skinned meshes
         skin_data = {}
@@ -94,16 +95,17 @@ class ColladaImporter:
                             normals_list.append(coord.item())
 
                     # Go over weights
-                    for index in tri.indices:
-                        joints_list.append(skin_data[geometry.id]["joints"][index])
-                        weights_list.append(skin_data[geometry.id]["weights"][index])
+                    if geometry.id in skin_data:
+                        for index in tri.indices:
+                            joints_list.append(skin_data[geometry.id]["joints"][index])
+                            weights_list.append(skin_data[geometry.id]["weights"][index])
+
+                        new_mesh["joints"] = joints_list
+                        new_mesh["weights"] = weights_list
 
                 new_mesh["vertices"] = vertex_list
                 new_mesh["texcoords"] = texcoords_list
                 new_mesh["normals"] = normals_list
-                new_mesh["joints"] = joints_list
-                new_mesh["weights"] = weights_list
-                new_mesh["nodes"] = node_list
 
             # Add metadata
             new_mesh["metadata"] = {

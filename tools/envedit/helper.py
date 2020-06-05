@@ -4,7 +4,7 @@ Helper functions and values for envedit.
 @author Ben Giacalone
 """
 import numpy as np
-from panda3d.core import LMatrix4f
+from panda3d.core import LMatrix4f, LVector3f
 
 
 def panda_mat4_to_np(panda_mat):
@@ -19,3 +19,11 @@ def np_mat4_to_panda(np_mat):
                      np_mat[0][1], np_mat[1][1], np_mat[2][1], np_mat[3][1],
                      np_mat[0][2], np_mat[1][2], np_mat[2][2], np_mat[3][2],
                      np_mat[0][3], np_mat[1][3], np_mat[2][3], np_mat[3][3])
+
+
+def panda_vec3_to_np(panda_vec):
+    return np.array([panda_vec[0], panda_vec[1], panda_vec[2]])
+
+
+def np_vec3_to_panda(np_vec):
+    return LVector3f(np_vec[0], np_vec[1], np_vec[2])

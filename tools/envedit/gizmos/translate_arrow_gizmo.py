@@ -9,7 +9,7 @@ from os import path
 from pathlib import Path
 
 import numpy as np
-from panda3d.core import Filename, Shader, LVector4f
+from panda3d.core import Filename, Shader, LVector4f, LVector3f
 
 from components.mesh_graphic import MeshGraphic
 from tools.envedit import helper
@@ -42,8 +42,10 @@ class TranslateArrowGizmo(MeshGizmo):
         with open(arrow_path, "r") as file:
             arrow_json = json.load(file)
 
-        # Generate mesh (renders on top of everything else
+        # Generate mesh (renders on top of everything else)
         MeshGizmo.gen_geom(self, arrow_json)
+        self.geom_path.setTag("shader type", "gizmo")
+        self.geom_path.set_shader_input("gizmo_pos", LVector3f(0, 0, 0))
         self.get_geom().setColor(self.color)
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)

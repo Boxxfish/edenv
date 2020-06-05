@@ -34,17 +34,35 @@ class GizmoSystem(DirectObject):
         self.frame_buffer.setSort(-100)
         self.frame_buffer.setClearColor((0, 0, 0, 1))
 
-        # Load object selection shader
+        # Load object selection shaders
         shader_folder_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/shaders"
         self.color_picker_shader = Shader.load(Shader.SL_GLSL,
                                                vertex=Filename(shader_folder_path / "picker.vert").cStr(),
                                                fragment=Filename(shader_folder_path / "picker.frag").cStr())
+
+        self.skinned_shader = Shader.load(Shader.SL_GLSL,
+                                          vertex=Filename(shader_folder_path / "skinned.vert").cStr(),
+                                          fragment=Filename(shader_folder_path / "picker.frag").cStr())
+
+        self.gizmo_shader = Shader.load(Shader.SL_GLSL,
+                                        vertex=Filename(shader_folder_path / "gizmo.vert").cStr(),
+                                        fragment=Filename(shader_folder_path / "picker.frag").cStr())
 
         # Set up color picking camera
         self.color_cam = self.base.makeCamera(self.frame_buffer)
         color_cam_options = NodePath("color_cam_options")
         color_cam_options.setShader(self.color_picker_shader)
         self.color_cam.node().setInitialState(color_cam_options.getState())
+
+        skinned_render_state = NodePath("")
+        skinned_render_state.set_shader(self.skinned_shader)
+        self.color_cam.node().setTagStateKey("skinned")
+        self.color_cam.node().setTagState("True", skinned_render_state.get_state())
+
+        gizmo_render_state = NodePath("")
+        gizmo_render_state.set_shader(self.gizmo_shader)
+        self.color_cam.node().setTagStateKey("gizmo")
+        self.color_cam.node().setTagState("True", gizmo_render_state.get_state())
 
         # Register events
         self.accept("window-event", self.handle_window)
@@ -105,7 +123,8 @@ class GizmoSystem(DirectObject):
     def handle_window(self, window):
         # Regenerate frame buffer
         self.base.graphicsEngine.removeWindow(self.frame_buffer)
-        self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", window.size.x, window.size.y, to_ram=True)
+        self.frame_buffer = self.base.win.makeTextureBuffer("Color Picker Buffer", window.size.x, window.size.y,
+                                                            to_ram=True)
         self.frame_buffer.setSort(-100)
         self.frame_buffer.setClearColor((0, 0, 0, 1))
 
@@ -115,6 +134,16 @@ class GizmoSystem(DirectObject):
         color_cam_options = NodePath("color_cam_options")
         color_cam_options.setShader(self.color_picker_shader)
         self.color_cam.node().setInitialState(color_cam_options.getState())
+
+        self.color_cam.node().setTagStateKey("shader type")
+
+        skinned_render_state = NodePath("")
+        skinned_render_state.set_shader(self.skinned_shader)
+        self.color_cam.node().setTagState("skinned", skinned_render_state.get_state())
+
+        gizmo_render_state = NodePath("")
+        gizmo_render_state.set_shader(self.gizmo_shader)
+        self.color_cam.node().setTagState("gizmo", gizmo_render_state.get_state())
 
     # Handles left mouse button pressed
     def handle_left_mouse_pressed(self):

@@ -138,7 +138,7 @@ class MeshGizmo(Gizmo):
 
         # Set shader
         if has_weights:
-            self.geom_path.setTag("skinned", "True")
+            self.geom_path.setTag("shader type", "skinned")
             bone_mats = PTA_LMatrix4f()
             for _ in range(100):
                 bone_mats.push_back(helper.np_mat4_to_panda(np.identity(4)))

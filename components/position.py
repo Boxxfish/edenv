@@ -4,6 +4,8 @@ Represents the world space position of this model.
 """
 import math
 import numpy as np
+
+from tools.envedit import helper
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
@@ -122,20 +124,18 @@ class Position(EComponent):
 
             # Set arrow transforms
             x_transform = Transform()
-            x_transform.set_scale((0.1, 0.1, 0.1))
-            x_transform.set_translation((node_world_pos[0] + 1, node_world_pos[1], node_world_pos[2]))
-            x_transform.set_rotation((0, math.radians(90), 0))
+            x_transform.set_translation(node_world_pos)
+            x_transform.set_rotation((0, 0, math.radians(180)))
             self.x_arrow_gizmo.set_world_matrix(x_transform.get_mat())
 
             y_transform = Transform()
-            y_transform.set_scale((0.1, 0.1, 0.1))
-            y_transform.set_translation((node_world_pos[0], node_world_pos[1] + 1, node_world_pos[2]))
-            y_transform.set_rotation((math.radians(-90), 0, 0))
+            y_transform.set_translation(node_world_pos)
+            y_transform.set_rotation((0, 0, math.radians(-90)))
             self.y_arrow_gizmo.set_world_matrix(y_transform.get_mat())
 
             z_transform = Transform()
-            z_transform.set_scale((0.1, 0.1, 0.1))
-            z_transform.set_translation((node_world_pos[0], node_world_pos[1], node_world_pos[2] + 1))
+            z_transform.set_translation(node_world_pos)
+            z_transform.set_rotation((0, math.radians(90), 0))
             self.z_arrow_gizmo.set_world_matrix(z_transform.get_mat())
 
             # Remove other gizmos
@@ -253,6 +253,24 @@ class Position(EComponent):
         # Remove scale gizmos
         if self.x_handle_gizmo is not None:
             self.remove_scale_gizmos()
+
+    def on_gui_update(self):
+        gizmo_pos = self.node.transform.get_world_translation()
+
+        if self.x_arrow_gizmo is not None:
+            self.x_arrow_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.y_arrow_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.z_arrow_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+
+        if self.x_ring_gizmo is not None:
+            self.x_ring_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.y_ring_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.z_ring_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+
+        if self.x_handle_gizmo is not None:
+            self.x_handle_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.y_handle_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
+            self.z_handle_gizmo.get_geom().set_shader_input("gizmo_pos", helper.np_vec3_to_panda(gizmo_pos))
 
     def handle_translation(self, new_pos):
         # Update transform
