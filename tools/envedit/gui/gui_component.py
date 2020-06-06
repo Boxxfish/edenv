@@ -89,3 +89,11 @@ class GUIComponent:
     # Handles the component losing focus
     def handle_lost_focus(self):
         pass
+
+    # Handles the component losing drag
+    def handle_lost_drag(self):
+        pass
+
+    # Handles the component being dragged
+    def handle_drag(self, cursor_x, cursor_y):
+        pass

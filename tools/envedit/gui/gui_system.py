@@ -50,6 +50,7 @@ class GUISystem(DirectObject):
         self.window.add_render()
         self.target_component = self.window     # the target is the component the cursor is currently over
         self.focus_component = self.window      # the focus component is the component that's currently focused
+        self.drag_component = self.window       # the drag component is the component that's being dragged
 
         # Set up mouse polling
         self.cursor_x = 0
@@ -78,6 +79,10 @@ class GUISystem(DirectObject):
     def handle_left_mouse_released(self):
         if self.target_component is not None:
             self.target_component.handle_left_released()
+
+        if self.drag_component is not None:
+            self.drag_component.handle_lost_drag()
+            self.drag_component = self.window
 
         # Force system to reset target component on next loop
         self.cursor_x = -1
@@ -142,6 +147,9 @@ class GUISystem(DirectObject):
 
             # If the position's changed, change target and trigger cursor events for old and new target
             if new_x != self.cursor_x or new_y != self.cursor_y:
+                if self.drag_component is not None:
+                    self.drag_component.handle_drag(new_x, new_y)
+
                 old_target = self.target_component
                 self.target_component = self.window.get_selected_component(new_x, new_y)
                 if old_target != self.target_component:
@@ -199,3 +207,11 @@ class GUISystem(DirectObject):
     @staticmethod
     def release_focus():
         GUISystem.set_focus(GUISystem.gui_system.window)
+        GUISystem.gui_system.window.context_menu_layer.clear()
+
+    # Sets the current dragged component
+    @staticmethod
+    def set_drag(component):
+        if GUISystem.gui_system.drag_component is not component:
+            GUISystem.gui_system.drag_component.handle_lost_drag()
+        GUISystem.gui_system.drag_component = component

@@ -6,11 +6,13 @@ Controls the scene graph viewer.
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.gui.gui_component import GUIComponent
+from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_list import GUIList
 from tools.envedit.gui.gui_list_dropdown import GUIListDropdown
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
+from tools.envedit.gui.gui_scroll_container import GUIScrollContainer
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
 from tools.envedit.gui.gui_text_box import GUITextBox
@@ -29,8 +31,11 @@ class GraphViewer(GUIFrame):
         self.bbox.width = 300
         self.padding = 10
 
+        master_layout = GUIDockLayout()
+        self.set_child(master_layout)
+
         layout = GUIStackLayout()
-        self.set_child(layout)
+        master_layout.set_child_dock(layout, GUIDockLayout.TOP)
 
         title = GUILabel()
         title.text_size = 30
@@ -42,8 +47,11 @@ class GraphViewer(GUIFrame):
         spacer.bbox.height = 20
         layout.add_child(spacer)
 
+        scroll_container = GUIScrollContainer(scroll_v=True, scroll_h=True)
+        master_layout.set_child_dock(scroll_container, GUIDockLayout.CENTER)
+
         self.scene_list = GUIList()
-        layout.add_child(self.scene_list)
+        scroll_container.set_child(self.scene_list)
 
     # Adds a node from the scene tree to the graph viewer.
     def setup_scene_tree(self, node, parent):

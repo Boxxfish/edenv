@@ -50,6 +50,13 @@ class GUIList(GUIComponent):
             self.remove_item(list_item)
 
     def update(self, parent_bbox):
+        largest_width = 0
+        if self.child is not None:
+            for child in self.child.children:
+                if largest_width < child.child.bbox.width:
+                    largest_width = child.child.bbox.width
+        self.bbox.width = max(largest_width, parent_bbox.width)
+
         self.child.bbox.x = self.bbox.x
         self.child.bbox.y = self.bbox.y
         self.child.bbox.width = self.bbox.width
