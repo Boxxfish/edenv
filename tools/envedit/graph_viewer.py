@@ -3,6 +3,8 @@ Controls the scene graph viewer.
 
 @author Ben Giacalone
 """
+import json
+
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.gui.gui_component import GUIComponent
@@ -16,6 +18,7 @@ from tools.envedit.gui.gui_scroll_container import GUIScrollContainer
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
 from tools.envedit.gui.gui_text_box import GUITextBox
+from tkinter import filedialog
 
 
 class GraphViewer(GUIFrame):
@@ -157,6 +160,12 @@ class GraphViewer(GUIFrame):
             ren_node_button.data = item
             menu.child.add_child(ren_node_button)
 
+        export_node_button = GUIMenuItem()
+        export_node_button.child.set_text("Export Node Tree")
+        export_node_button.on_release = self.export_node_handler
+        export_node_button.data = item
+        menu.child.add_child(export_node_button)
+
         # No clue why this works
         menu.update(self.bbox)
         menu.update(self.bbox)
@@ -201,6 +210,17 @@ class GraphViewer(GUIFrame):
         item.data.child.add_child(text_box)
         text_box.handle_left_pressed()
         text_box.on_lost_focus = self.rename_lost_focus
+
+    # Handles the "export node tree" option being selected
+    def export_node_handler(self, item):
+        # Open file dialog
+        filetypes = [("JSON", "*.json")]
+        file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
+
+        # Save graph node
+        file_dict = GraphNode.scene_graph_to_dict(item.data.data)
+        with open(file_path, "w") as file:
+            json.dump(file_dict, file)
 
     # Handles losing focus of renaming text box
     def rename_lost_focus(self, item):
