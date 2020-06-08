@@ -50,15 +50,17 @@ class ComponentViewer(GUIFrame):
         if self.envedit_data is not None and self.envedit_data.target_node is not None:
             # Remove drawers that don't exist
             remove_list = []
-            for drawer in self.component_layout.children:
-                if drawer.component not in self.envedit_data.target_node.data:
+            for i in range(len(self.component_layout.children)):
+                drawer = self.component_layout.children[i]
+                if i >= len(self.envedit_data.target_node.data) or drawer.component is not self.envedit_data.target_node.data[i]:
                     remove_list.append(drawer)
             for drawer in remove_list:
                 self.component_layout.remove_child(drawer)
 
             # Add new drawers
-            for component in self.envedit_data.target_node.data:
-                if component not in [drawer.component for drawer in self.component_layout.children]:
+            for i in range(len(self.envedit_data.target_node.data)):
+                component = self.envedit_data.target_node.data[i]
+                if i >= len(self.component_layout.children) or component is not self.component_layout.children[i].component:
                     drawer = ComponentDrawer(component)
                     drawer.set_envedit_data(self.envedit_data)
                     self.component_layout.add_child(drawer)

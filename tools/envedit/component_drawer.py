@@ -46,6 +46,18 @@ class ComponentDrawer(GUIFrame):
         options_dropdown = GUIDropdown(GUIDropdownVisualType.VERTICAL)
         title_layout.set_child_dock(options_dropdown, GUIDockLayout.RIGHT)
 
+        move_up_option = GUIMenuItem()
+        move_up_option.child.set_text("Move Component Up")
+        move_up_option.data = self.component
+        move_up_option.on_release = self.move_up_option_handler
+        options_dropdown.menu.child.add_child(move_up_option)
+
+        move_down_option = GUIMenuItem()
+        move_down_option.child.set_text("Move Component Down")
+        move_down_option.data = self.component
+        move_down_option.on_release = self.move_down_option_handler
+        options_dropdown.menu.child.add_child(move_down_option)
+
         del_option = GUIMenuItem()
         del_option.child.set_text("Delete Component")
         del_option.data = self.component
@@ -169,6 +181,26 @@ class ComponentDrawer(GUIFrame):
                     property_layout.add_child(property_val)
                     property_frame.fit_height_to_content = True
                     property_layout.bbox.height = property_val.bbox.height
+
+    def move_up_option_handler(self, item):
+        list_index = self.envedit_data.target_node.data.index(item.data)
+        if list_index == 0:
+            return
+        self.envedit_data.target_node.remove_component(item.data)
+        self.envedit_data.target_node.insert_component(item.data, list_index - 1)
+
+        self.envedit_data.modify()
+        self.envedit_data.update()
+
+    def move_down_option_handler(self, item):
+        list_index = self.envedit_data.target_node.data.index(item.data)
+        if list_index + 1 == len(self.envedit_data.target_node.data):
+            return
+        self.envedit_data.target_node.remove_component(item.data)
+        self.envedit_data.target_node.insert_component(item.data, list_index + 1)
+
+        self.envedit_data.modify()
+        self.envedit_data.update()
 
     def del_option_handler(self, item):
         self.envedit_data.target_node.remove_component(item.data)

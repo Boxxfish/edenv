@@ -50,6 +50,12 @@ class GraphNode:
         self.data.append(component)
         component.on_gui_change()
 
+    # Adds a component to the node at index
+    def insert_component(self, component, index):
+        component.node = self
+        self.data.insert(index, component)
+        component.on_gui_change()
+
     # Removes a component from the node
     def remove_component(self, component):
         component.node = None
