@@ -181,6 +181,40 @@ class ComponentDrawer(GUIFrame):
                     property_layout.add_child(property_val)
                     property_frame.fit_height_to_content = True
                     property_layout.bbox.height = property_val.bbox.height
+                elif property_type == PropertyType.VECTOR3:
+                    property_val = GUIStackLayout(vertical=False)
+
+                    x_val = GUINumberBox()
+                    x_val.data = {"parent": property, "index": 0}
+                    x_val.bbox.width = 60
+                    x_val.text_box.set_text(str(self.component.property_vals[property][0]))
+                    x_val.on_text_changed = self.text_change_handler
+                    property_val.add_child(x_val)
+
+                    spacer_1 = GUIComponent()
+                    spacer_1.bbox.width = 10
+                    property_val.add_child(spacer_1)
+
+                    y_val = GUINumberBox()
+                    y_val.data = {"parent": property, "index": 1}
+                    y_val.bbox.width = 60
+                    y_val.text_box.set_text(str(self.component.property_vals[property][1]))
+                    y_val.on_text_changed = self.text_change_handler
+                    property_val.add_child(y_val)
+
+                    spacer_2 = GUIComponent()
+                    spacer_2.bbox.width = 10
+                    property_val.add_child(spacer_2)
+
+                    z_val = GUINumberBox()
+                    z_val.data = {"parent": property, "index": 2}
+                    z_val.bbox.width = 60
+                    z_val.text_box.set_text(str(self.component.property_vals[property][2]))
+                    z_val.on_text_changed = self.text_change_handler
+                    property_val.add_child(z_val)
+
+                    self.property_fields[property] = property_val
+                    property_layout.add_child(property_val)
 
     def move_up_option_handler(self, item):
         list_index = self.envedit_data.target_node.data.index(item.data)
@@ -289,5 +323,8 @@ class ComponentDrawer(GUIFrame):
             property_val.set_text(self.component.property_vals[property_name])
         elif property_type == PropertyType.FILE:
             property_val.set_text(self.component.property_vals[property_name])
+        # TODO: Fix below statements so it actually sets the values
         elif property_type == PropertyType.ARRAY:
+            property_val.set_text(self.component.property_vals[property_name])
+        elif property_type == PropertyType.VECTOR3:
             property_val.set_text(self.component.property_vals[property_name])

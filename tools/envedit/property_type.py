@@ -14,3 +14,4 @@ class PropertyType(Enum):
     FILE = auto()
     HIDDEN = auto()
     ARRAY = auto()
+    VECTOR3 = auto()
