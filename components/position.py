@@ -95,6 +95,7 @@ class Position(EComponent):
                                                 float(self.property_vals["scale_y"]),
                                                 float(self.property_vals["scale_z"])]))
 
+
         node_world_pos = self.node.transform.get_world_translation()
         node_rot_mat = self.node.transform.get_rot_mat(self.node.transform.get_world_rotation())
 

@@ -105,7 +105,7 @@ class GraphNode:
     def scene_graph_to_dict(node):
         curr_dict = {}
         curr_dict["name"] = node.name
-        curr_dict["components"] = [component.to_dict() for component in node.data]
+        curr_dict["components"] = [component.to_dict() for component in node.data if component.to_dict()["script_path"] != "components.position"]
         curr_dict["transform"] = node.transform.to_dict()
 
         child_list = []
@@ -122,6 +122,19 @@ class GraphNode:
         node.name = node_dict["name"]
         node.data = []
         node.transform.load_from_dict(node_dict["transform"])
+
+        pos_component = EComponent.from_script("components.position")
+        pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
+        pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
+        pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
+        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
+        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
+        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
+        pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
+        pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
+        pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)
+        node.add_component(pos_component)
+
         for component_dict in node_dict["components"]:
             component = EComponent.load_from_dict(component_dict)
             node.add_component(component)

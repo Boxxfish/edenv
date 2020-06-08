@@ -150,19 +150,6 @@ class ColladaImporter:
         if hasattr(scene_node, "matrix"):
             node.transform.set_matrix(scene_node.matrix)
 
-        # Add a Position component
-        pos_component = EComponent.from_script("components.position")
-        pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
-        pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
-        pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
-        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
-        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
-        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
-        pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
-        pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
-        pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)
-        node.add_component(pos_component)
-
         # Propagate to children
         if hasattr(scene_node, "children") or hasattr(scene_node, "nodes"):
             children = scene_node.nodes if isinstance(scene_node, Scene) else scene_node.children
@@ -185,15 +172,6 @@ class ColladaImporter:
 
                         # Set bind shape matrix
                         node.transform.set_matrix(child.controller.bind_shape_matrix)
-                        pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
-                        pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
-                        pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
-                        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
-                        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
-                        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
-                        pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
-                        pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
-                        pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)
                         continue
 
                     # If child is a joint and this node isn't, add an armature to the child
