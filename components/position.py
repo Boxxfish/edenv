@@ -36,15 +36,9 @@ class Position(EComponent):
     # Called by scene editor to get this component's properties
     @staticmethod
     def get_properties():
-        return {"pos_x": PropertyType.FLOAT,
-                "pos_y": PropertyType.FLOAT,
-                "pos_z": PropertyType.FLOAT,
-                "rot_x": PropertyType.FLOAT,
-                "rot_y": PropertyType.FLOAT,
-                "rot_z": PropertyType.FLOAT,
-                "scale_x": PropertyType.FLOAT,
-                "scale_y": PropertyType.FLOAT,
-                "scale_z": PropertyType.FLOAT}
+        return {"pos": PropertyType.VECTOR3,
+                "rot": PropertyType.VECTOR3,
+                "scale": PropertyType.VECTOR3}
 
     # Called when component property is changed and the component isn't selected
     def on_gui_change(self):
@@ -85,16 +79,16 @@ class Position(EComponent):
     # Called when component property is changed and the component is selected
     def on_gui_change_selected(self):
         # Set transform properties
-        self.node.transform.set_translation(np.array([float(self.property_vals["pos_x"]),
-                                                      float(self.property_vals["pos_y"]),
-                                                      float(self.property_vals["pos_z"])]))
-        self.node.transform.set_rotation(np.array([math.radians(float(self.property_vals["rot_x"])),
-                                                   math.radians(float(self.property_vals["rot_y"])),
-                                                   math.radians(float(self.property_vals["rot_z"]))]))
-        self.node.transform.set_scale(np.array([float(self.property_vals["scale_x"]),
-                                                float(self.property_vals["scale_y"]),
-                                                float(self.property_vals["scale_z"])]))
-
+        print(self.property_vals["pos"])
+        self.node.transform.set_translation(np.array([float(self.property_vals["pos"][0]),
+                                                      float(self.property_vals["pos"][1]),
+                                                      float(self.property_vals["pos"][2])]))
+        self.node.transform.set_rotation(np.array([math.radians(float(self.property_vals["rot"][0])),
+                                                   math.radians(float(self.property_vals["rot"][1])),
+                                                   math.radians(float(self.property_vals["rot"][2]))]))
+        self.node.transform.set_scale(np.array([float(self.property_vals["scale"][0]),
+                                                float(self.property_vals["scale"][1]),
+                                                float(self.property_vals["scale"][2])]))
 
         node_world_pos = self.node.transform.get_world_translation()
         node_rot_mat = self.node.transform.get_rot_mat(self.node.transform.get_world_rotation())
@@ -278,34 +272,30 @@ class Position(EComponent):
         self.node.transform.set_world_translation(new_pos)
 
         # Set position component's properties
-        self.property_vals["pos_x"] = str(self.node.transform.trans[0])
-        self.property_vals["pos_y"] = str(self.node.transform.trans[1])
-        self.property_vals["pos_z"] = str(self.node.transform.trans[2])
+        self.property_vals["pos"][0] = str(self.node.transform.trans[0])
+        self.property_vals["pos"][1] = str(self.node.transform.trans[1])
+        self.property_vals["pos"][2] = str(self.node.transform.trans[2])
 
         self.node.component_property_changed_selected()
 
     def handle_finished_translation(self):
         if self.component_update_callback is not None:
-            self.component_update_callback("pos_x")
-            self.component_update_callback("pos_y")
-            self.component_update_callback("pos_z")
+            self.component_update_callback("pos")
 
     def handle_rotation(self, new_rot):
         # Update transform
         self.node.transform.set_rotation(new_rot)
 
         # Set position component's properties
-        self.property_vals["rot_x"] = str(math.degrees(self.node.transform.rot[0]))
-        self.property_vals["rot_y"] = str(math.degrees(self.node.transform.rot[1]))
-        self.property_vals["rot_z"] = str(math.degrees(self.node.transform.rot[2]))
+        self.property_vals["rot"][0] = str(math.degrees(self.node.transform.rot[0]))
+        self.property_vals["rot"][1] = str(math.degrees(self.node.transform.rot[1]))
+        self.property_vals["rot"][2] = str(math.degrees(self.node.transform.rot[2]))
 
         self.node.component_property_changed_selected()
 
     def handle_finished_rotation(self):
         if self.component_update_callback is not None:
-            self.component_update_callback("rot_x")
-            self.component_update_callback("rot_y")
-            self.component_update_callback("rot_z")
+            self.component_update_callback("rot")
 
         self.x_ring_gizmo.gen_plane_normal()
         self.y_ring_gizmo.gen_plane_normal()
@@ -316,17 +306,15 @@ class Position(EComponent):
         self.node.transform.set_world_scale(new_scale)
 
         # Set position component's properties
-        self.property_vals["scale_x"] = str(self.node.transform.scale[0])
-        self.property_vals["scale_y"] = str(self.node.transform.scale[1])
-        self.property_vals["scale_z"] = str(self.node.transform.scale[2])
+        self.property_vals["scale"][0] = str(self.node.transform.scale[0])
+        self.property_vals["scale"][1] = str(self.node.transform.scale[1])
+        self.property_vals["scale"][2] = str(self.node.transform.scale[2])
 
         self.node.component_property_changed_selected()
 
     def handle_finished_scale(self):
         if self.component_update_callback is not None:
-            self.component_update_callback("scale_x")
-            self.component_update_callback("scale_y")
-            self.component_update_callback("scale_z")
+            self.component_update_callback("scale")
 
     def remove_translate_gizmos(self):
         GizmoSystem.remove_gizmo(self.x_arrow_gizmo)

@@ -179,9 +179,9 @@ class GraphViewer(GUIFrame):
     def add_node_handler(self, item):
         # Create new node
         pos_comp = EComponent.from_script("components.position")
-        pos_comp.property_vals["scale_x"] = "1"
-        pos_comp.property_vals["scale_y"] = "1"
-        pos_comp.property_vals["scale_z"] = "1"
+        pos_comp.property_vals["scale"][0] = "1"
+        pos_comp.property_vals["scale"][1] = "1"
+        pos_comp.property_vals["scale"][2] = "1"
         new_node = GraphNode(f"New Node ({len(item.data.sub_list)})", [pos_comp])
         item.data.data.add_child(new_node)
         new_node.component_property_changed()
