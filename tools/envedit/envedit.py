@@ -139,6 +139,10 @@ class EnvEdit(ShowBase):
             self.update_node(child)
 
 
-if __name__ == "__main__":
+def main():
     app = EnvEdit()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

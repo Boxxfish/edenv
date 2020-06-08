@@ -8,6 +8,8 @@ from pathlib import Path
 from shutil import copytree
 from os import path
 import yaml
+from tools.envedit import envedit as edenv_envedit
+from tools.resimport import resimport as edenv_resimport
 
 
 @click.group()
@@ -62,6 +64,17 @@ def list():
             for env in envs:
                 click.echo(f"{env}")
 
+
+@main.command()
+def envedit():
+    edenv_envedit.main()
+
+
+@main.command()
+@click.argument("files", nargs=-1, type=click.File('rb'))
+@click.pass_context
+def resimport(ctx, files):
+    ctx.forward(edenv_resimport.resimport)
 
 if __name__ == "__main__":
     main()

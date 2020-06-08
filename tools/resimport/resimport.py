@@ -32,5 +32,6 @@ def resimport(files):
         click.echo(f"Successfully imported {file.name}")
         click.echo("----------------------")
 
+
 if __name__ == "__main__":
     resimport()
