@@ -7,7 +7,7 @@ in ivec4 joint;
 in vec4 weight;
 in vec4 p3d_Color;
 
-uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform mat4 p3d_ViewProjectionMatrix;
 uniform mat3 p3d_NormalMatrix;
 uniform mat4 p3d_ModelMatrix;
 uniform mat4 p3d_ViewMatrix;
@@ -23,7 +23,7 @@ void main() {
 	Color = p3d_Color;
 	TexCoord = p3d_MultiTexCoord0;
 	mat4 transformMat = boneMats[joint.x] * weight.x + boneMats[joint.y] * weight.y + boneMats[joint.z] * weight.z + boneMats[joint.w] * weight.w;
-	mat4 NormalMatrix = transpose(inverse(p3d_ViewMatrix * p3d_ModelMatrix * transformMat));
+	mat4 NormalMatrix = transpose(inverse(p3d_ViewMatrix * transformMat * p3d_ModelMatrix));
 	Normal = normalize((NormalMatrix * vec4(p3d_Normal, 0)).xyz);
-	gl_Position = p3d_ModelViewProjectionMatrix * transformMat * p3d_Vertex;
+	gl_Position = p3d_ViewProjectionMatrix * transformMat * p3d_ModelMatrix * p3d_Vertex;
 }

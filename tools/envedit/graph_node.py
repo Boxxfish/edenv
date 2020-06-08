@@ -3,6 +3,8 @@ Represents a graph node for EDEnv's internal scene graph representation.
 
 @author Ben Giacalone
 """
+import math
+
 import numpy as np
 
 from tools.envedit.edenv_component import EComponent
@@ -127,9 +129,9 @@ class GraphNode:
         pos_component.property_vals["pos_x"] = str(int(node.transform.trans[0].item() * 1000) / 1000)
         pos_component.property_vals["pos_y"] = str(int(node.transform.trans[1].item() * 1000) / 1000)
         pos_component.property_vals["pos_z"] = str(int(node.transform.trans[2].item() * 1000) / 1000)
-        pos_component.property_vals["rot_x"] = str(int(node.transform.rot[0].item() * 1000) / 1000)
-        pos_component.property_vals["rot_y"] = str(int(node.transform.rot[1].item() * 1000) / 1000)
-        pos_component.property_vals["rot_z"] = str(int(node.transform.rot[2].item() * 1000) / 1000)
+        pos_component.property_vals["rot_x"] = str(math.degrees(int(node.transform.rot[0].item() * 1000) / 1000))
+        pos_component.property_vals["rot_y"] = str(math.degrees(int(node.transform.rot[1].item() * 1000) / 1000))
+        pos_component.property_vals["rot_z"] = str(math.degrees(int(node.transform.rot[2].item() * 1000) / 1000))
         pos_component.property_vals["scale_x"] = str(int(node.transform.scale[0].item() * 1000) / 1000)
         pos_component.property_vals["scale_y"] = str(int(node.transform.scale[1].item() * 1000) / 1000)
         pos_component.property_vals["scale_z"] = str(int(node.transform.scale[2].item() * 1000) / 1000)

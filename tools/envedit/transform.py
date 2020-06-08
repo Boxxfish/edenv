@@ -163,7 +163,7 @@ class Transform:
 
     # Updates the matrix after a change
     def update(self):
-        self.dirty = True
+        self.recalculate()
         if self.on_matrix_update is not None:
             self.on_matrix_update(self.get_world_matrix())
 
