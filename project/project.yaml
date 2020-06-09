@@ -8,3 +8,4 @@ components:
  MeshGraphic: components.mesh_graphic
  Armature: components.armature
  CubeCollider: components.cube_collider
+ SphereCollider: components.sphere_collider

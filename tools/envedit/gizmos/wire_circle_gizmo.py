@@ -26,6 +26,8 @@ class WireCircleGizmo(MeshGizmo):
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)
         self.get_geom().setLightOff()
+        self.get_geom().setTwoSided(True)
+        self.get_geom().setRenderModeWireframe()
 
     # Sets circle's color
     def set_color(self, color):
