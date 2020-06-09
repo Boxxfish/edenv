@@ -218,9 +218,10 @@ class GraphViewer(GUIFrame):
         file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
 
         # Save graph node
-        file_dict = GraphNode.scene_graph_to_dict(item.data.data)
-        with open(file_path, "w") as file:
-            json.dump(file_dict, file)
+        if file_path != "":
+            file_dict = GraphNode.scene_graph_to_dict(item.data.data)
+            with open(file_path, "w") as file:
+                json.dump(file_dict, file)
 
     # Handles losing focus of renaming text box
     def rename_lost_focus(self, item):
