@@ -15,13 +15,13 @@ class WireCircleGizmo(MeshGizmo):
         self.color = (1.0, 1.0, 1.0, 1.0)
 
         # Load cube mesh file
-        cube_json = None
-        cube_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/meshes/cube.json"
-        with open(cube_path, "r") as file:
-            cube_json = json.load(file)
+        circle_json = None
+        circle_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/meshes/circle.json"
+        with open(circle_path, "r") as file:
+            circle_json = json.load(file)
 
         # Generate mesh (renders on top of everything else)
-        MeshGizmo.gen_geom(self, cube_json)
+        MeshGizmo.gen_geom(self, circle_json)
         self.get_geom().setColor(self.color)
         self.get_geom().setBin("fixed", 0)
         self.get_geom().setDepthTest(False)

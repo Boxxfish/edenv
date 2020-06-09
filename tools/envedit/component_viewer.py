@@ -100,5 +100,6 @@ class ComponentViewer(GUIFrame):
     def add_component_handler(self, item):
         component = EComponent.from_script(item.data)
         self.envedit_data.target_node.add_component(component)
+        self.envedit_data.target_node.component_property_changed_selected()
         self.envedit_data.modify()
         self.envedit_data.update()

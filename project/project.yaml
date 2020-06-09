@@ -7,3 +7,4 @@ components:
  Position: components.position
  MeshGraphic: components.mesh_graphic
  Armature: components.armature
+ CubeCollider: components.cube_collider
