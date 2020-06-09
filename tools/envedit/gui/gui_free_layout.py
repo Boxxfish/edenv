@@ -17,13 +17,13 @@ class GUIFreeLayout(GUILayout):
         if self.rendering:
             child.add_render()
         self.children.append(child)
-        self.update(self.bbox)
+        self.update()
 
     # Removes a child from the layout
     def remove_child(self, child):
         child.stop_render()
         self.children.remove(child)
-        self.update(self.bbox)
+        self.update()
 
     # Removes all children from the layout
     def clear(self):
@@ -40,7 +40,7 @@ class GUIFreeLayout(GUILayout):
                     return child_component
         return None
 
-    def update(self, parent_bbox):
+    def update(self):
         for child in self.children:
             # If child is outside bounds, reposition it back in
             if child.bbox.x + child.bbox.width > self.bbox.x + self.bbox.width:
@@ -48,7 +48,8 @@ class GUIFreeLayout(GUILayout):
             if child.bbox.y + child.bbox.height > self.bbox.y + self.bbox.height:
                 child.bbox.y -= (child.bbox.y + child.bbox.height) - (self.bbox.y + self.bbox.height)
 
-            child.update(self.bbox)
+            child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+            child.update()
 
     def add_render(self):
         self.rendering = True

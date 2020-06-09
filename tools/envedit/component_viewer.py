@@ -83,7 +83,7 @@ class ComponentViewer(GUIFrame):
 
             # Set up the node's components
             self.setup_components()
-            self.update(self.bbox)
+            self.update()
 
     # Sets the list of components from configuration file
     def set_components(self, components):

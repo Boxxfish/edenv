@@ -30,8 +30,8 @@ class GUIScrollContainer(GUIDockLayout):
             self.horizontal_scrollbar.on_scroll = self.h_scroll_handler
             self.set_child_dock(self.horizontal_scrollbar, GUIDockLayout.BOTTOM)
 
-    def update(self, parent_bbox):
-        GUIDockLayout.update(self, parent_bbox)
+    def update(self):
+        GUIDockLayout.update(self)
 
         self.center_child.bbox.y = self.bbox.y - self.v_offset
         self.center_child.bbox.x = self.bbox.x - self.h_offset
@@ -50,15 +50,16 @@ class GUIScrollContainer(GUIDockLayout):
             else:
                 self.horizontal_scrollbar.scroll_size = self.horizontal_scrollbar.bbox.width - (self.center_child.bbox.width - self.horizontal_scrollbar.bbox.width) / self.h_offset_per_scroll
 
-        self.center_child.update(self.bbox)
+        self.center_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.center_child.update()
 
     def set_child(self, child):
         self.set_child_dock(child, GUIDockLayout.CENTER)
 
     def v_scroll_handler(self, offset):
         self.v_offset = offset * self.v_offset_per_scroll
-        self.update(self.bbox)
+        self.update()
 
     def h_scroll_handler(self, offset):
         self.h_offset = offset * self.h_offset_per_scroll
-        self.update(self.bbox)
+        self.update()

@@ -35,8 +35,8 @@ class GUIScrollbar(GUIFrame):
         self.scroll_button.on_click = self.scroll_button_pressed
         self.set_child(self.scroll_button)
 
-    def update(self, parent_bbox):
-        GUIFrame.update(self, parent_bbox)
+    def update(self):
+        GUIFrame.update(self)
         if self.child is not None:
             if self.vertical:
                 self.scroll_button.bbox.width = 10
@@ -46,7 +46,8 @@ class GUIScrollbar(GUIFrame):
                 self.scroll_button.bbox.width = self.scroll_size
                 self.scroll_button.bbox.height = 10
                 self.child.bbox.x = self.bbox.x + self.offset
-            self.child.update(self.bbox)
+            self.child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+            self.child.update()
 
     def scroll_button_pressed(self, button):
         GUISystem.set_drag(self)
@@ -61,7 +62,7 @@ class GUIScrollbar(GUIFrame):
             self.offset = min(self.bbox.height - self.child.bbox.height, max(0, self.start_offset + cursor_y - self.start_pos))
         else:
             self.offset = min(self.bbox.width - self.child.bbox.width, max(0, self.start_offset + cursor_x - self.start_pos))
-        self.update(self.bbox)
+        self.update()
 
         if self.on_scroll is not None:
             self.on_scroll(self.offset)

@@ -14,14 +14,15 @@ class GUIStackLayout(GUILayout):
         self.vertical = vertical
         self.padding = 0
 
-    def update(self, parent_bbox):
+    def update(self):
         if self.vertical:
             next_y = 0
             for child in self.children:
                 child.bbox.x = self.bbox.x + self.padding
                 child.bbox.y = self.bbox.y + self.padding + next_y
                 child.bbox.width = self.bbox.width - self.padding * 2
-                child.update(self.bbox)
+                child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+                child.update()
                 next_y += child.bbox.height
             self.bbox.height = next_y
         else:
@@ -30,7 +31,8 @@ class GUIStackLayout(GUILayout):
                 child.bbox.x = self.bbox.x + self.padding + next_x
                 child.bbox.y = self.bbox.y + self.padding
                 child.bbox.height = self.bbox.height - self.padding * 2
-                child.update(self.bbox)
+                child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+                child.update()
                 next_x += child.bbox.width
             self.bbox.width = next_x
 
@@ -42,14 +44,14 @@ class GUIStackLayout(GUILayout):
             self.children.insert(index, child)
         if self.rendering:
             child.add_render()
-        self.update(self.bbox)
+        self.update()
 
     # Removes a child from the layout
     def remove_child(self, child):
         child.stop_render()
         if child in self.children:
             self.children.remove(child)
-        self.update(self.bbox)
+        self.update()
 
     # Removes all children from the layout
     def clear(self):

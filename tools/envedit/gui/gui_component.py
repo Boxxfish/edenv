@@ -10,6 +10,7 @@ class GUIComponent:
 
     def __init__(self):
         self.bbox = BoundingBox()
+        self.clip_region = BoundingBox()
         self.child = None
         self.gui_system = None
         self.receive_events = True
@@ -20,32 +21,37 @@ class GUIComponent:
         self.child = child
         if self.rendering:
             self.child.add_render()
-        self.update(self.bbox)
+        self.update()
 
     # Removes the child of the component
     def remove_child(self):
         self.child.stop_render()
         self.child = None
-        self.update(self.bbox)
+        self.update()
 
     # Updates the component after a change
-    def update(self, parent_bbox):
+    def update(self):
         if self.child is not None:
-            self.child.update(self.bbox)
+            self.child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+            self.child.update()
+
+    # Sets the clip region of the component
+    def set_clip_region(self, clip_region):
+        self.clip_region = clip_region
 
     # Removes the element and its child(ren) from the render tree
     def stop_render(self):
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.update(self.bbox)
+        self.update()
 
     # Adds the element and its child(ren) to the render tree
     def add_render(self):
         self.rendering = True
         if self.child is not None:
             self.child.add_render()
-        self.update(self.bbox)
+        self.update()
 
     # Checks if this component contains a point in screen space, then propagates to child
     def get_selected_component(self, x, y):

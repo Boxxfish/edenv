@@ -16,3 +16,6 @@ class GUIContextMenu(GUIFrame):
         self.bg_color = (0.5, 0.5, 0.5, 1)
         self.padding = 1
         self.set_child(GUIStackLayout())
+
+    def update(self):
+        GUIFrame.update(self)

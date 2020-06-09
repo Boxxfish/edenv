@@ -19,14 +19,17 @@ class GUIWindow(GUIComponent):
     def window_resized(self, width, height):
         self.bbox.width = width
         self.bbox.height = height
-        self.update(BoundingBox())
+        self.clip_region = self.bbox.copy()
+        self.update()
 
-    def update(self, parent_bbox):
+    def update(self):
         self.context_menu_layer.bbox = self.bbox.copy()
-        self.context_menu_layer.update(self.bbox)
+        self.context_menu_layer.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.context_menu_layer.update()
         if self.child is not None:
             self.child.bbox = self.bbox.copy()
-            self.child.update(self.bbox)
+            self.child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+            self.child.update()
 
     def get_selected_component(self, x, y):
         if self.bbox.point_inside(x, y) and self.receive_events:
@@ -45,7 +48,7 @@ class GUIWindow(GUIComponent):
         self.context_menu_layer.stop_render()
         if self.child is not None:
             self.child.stop_render()
-        self.update(BoundingBox())
+        self.update()
 
     # Adds the element and its child(ren) to the render tree
     def add_render(self):
@@ -53,4 +56,4 @@ class GUIWindow(GUIComponent):
         self.context_menu_layer.add_render()
         if self.child is not None:
             self.child.add_render()
-        self.update(BoundingBox())
+        self.update()

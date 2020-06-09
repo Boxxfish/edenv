@@ -130,7 +130,7 @@ class GraphViewer(GUIFrame):
                         list_item.select()
                         break
 
-            self.update(self.bbox)
+            self.update()
 
     # Called when a list item is clicked
     def list_item_clicked(self, item):
@@ -167,8 +167,8 @@ class GraphViewer(GUIFrame):
         menu.child.add_child(export_node_button)
 
         # No clue why this works
-        menu.update(self.bbox)
-        menu.update(self.bbox)
+        menu.update()
+        menu.update()
 
     # Handles a node being selected
     def node_pressed_handler(self, node):

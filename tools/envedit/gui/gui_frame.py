@@ -27,16 +27,16 @@ class GUIFrame(GUIComponent):
     # Sets background color
     def set_bg_color(self, bg_color):
         self.bg_color = bg_color
-        self.update(self.bbox)
+        self.update()
 
     # Sets the background image
     def set_bg_image(self, image_path):
         image_folder_path = Path(path.realpath(__file__)).parent.parent.parent.parent / "res/images"
         self.bg_image = Filename(image_folder_path / image_path).cStr()
-        self.update(self.bbox)
+        self.update()
 
     # Default behavior is to fill in the bounding box with bg color
-    def update(self, parent_bbox):
+    def update(self):
         if self.frame is not None:
             # Set background color and texture
             self.frame["frameColor"] = self.bg_color
@@ -50,7 +50,10 @@ class GUIFrame(GUIComponent):
             self.frame.resetFrameSize()
 
             # Set up scissor test
-            clip_x, clip_y, clip_w, clip_h = GUIUtils.get_panda_clip_coords(parent_bbox.x, parent_bbox.y, parent_bbox.width, parent_bbox.height)
+            clip_x, clip_y, clip_w, clip_h = GUIUtils.get_panda_clip_coords(self.clip_region.x,
+                                                                            self.clip_region.y,
+                                                                            self.clip_region.width,
+                                                                            self.clip_region.height)
             render_attrib = ScissorAttrib.make(LVector4f(clip_x, clip_x + clip_w, clip_y - clip_h, clip_y))
             self.frame.setAttrib(render_attrib)
 
@@ -67,14 +70,15 @@ class GUIFrame(GUIComponent):
                 else:
                     self.child.bbox.height = self.bbox.height - 2 * self.padding
 
-                self.child.update(self.bbox)
+                self.child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+                self.child.update()
 
     def add_render(self):
         self.rendering = True
         self.frame = DirectFrame(frameSize=(-1, 1, 1, -1))
         if self.child is not None:
             self.child.add_render()
-        self.update(self.bbox)
+        self.update()
 
     def stop_render(self):
         if self.rendering:
@@ -83,4 +87,4 @@ class GUIFrame(GUIComponent):
         self.rendering = False
         if self.child is not None:
             self.child.stop_render()
-        self.update(self.bbox)
+        self.update()

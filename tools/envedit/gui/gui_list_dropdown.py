@@ -66,13 +66,13 @@ class GUIListDropdown(GUIListItem):
         item.level = self.level + 1
         item.level_spacer.bbox.width = 22 * item.level
         self.sub_list.append(item)
-        self.update(self.bbox)
+        self.update()
 
     # Removes a sub-list item from the dropdown
     def remove_sub_item(self, item):
         item.parent = None
         self.sub_list.remove(item)
-        self.update(self.bbox)
+        self.update()
 
     # Expands this dropdown
     def expand(self):

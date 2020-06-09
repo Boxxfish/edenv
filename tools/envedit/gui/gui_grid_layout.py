@@ -14,7 +14,7 @@ class GUIGridLayout(GUILayout):
         self.columns = columns
         self.children = [[None for _ in range(self.columns)] for _ in range(self.rows)]
 
-    def update(self, parent_bbox):
+    def update(self):
         cell_width = self.bbox.width / self.columns
         cell_height = self.bbox.height / self.rows
         for r in range(self.rows):
@@ -25,6 +25,7 @@ class GUIGridLayout(GUILayout):
                     child.bbox.y = r * cell_height
                     child.bbox.width = cell_width
                     child.bbox.height = cell_height
+                    child.set_clip_region(self.clip_region.get_intersection(self.bbox))
                     child.update(self.bbox)
 
     # Set cell element at row, column

@@ -32,32 +32,37 @@ class GUIDockLayout(GUILayout):
         self.bottom_child = GUIComponent()
         self.center_child = GUIComponent()
 
-    def update(self, parent_bbox):
+    def update(self):
         self.top_child.bbox.x = self.bbox.x
         self.top_child.bbox.y = self.bbox.y
         self.top_child.bbox.width = self.bbox.width
-        self.top_child.update(self.bbox)
+        self.top_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.top_child.update()
 
         self.bottom_child.bbox.x = self.bbox.x
         self.bottom_child.bbox.y = self.bbox.y + self.bbox.height - self.bottom_child.bbox.height
         self.bottom_child.bbox.width = self.bbox.width
-        self.bottom_child.update(self.bbox)
+        self.bottom_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.bottom_child.update()
 
         self.left_child.bbox.x = self.bbox.x
         self.left_child.bbox.y = self.bbox.y + self.top_child.bbox.height
         self.left_child.bbox.height = self.bbox.height - (self.top_child.bbox.height + self.bottom_child.bbox.height)
-        self.left_child.update(self.bbox)
+        self.left_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.left_child.update()
 
         self.right_child.bbox.x = self.bbox.x + self.bbox.width - self.right_child.bbox.width
         self.right_child.bbox.y = self.bbox.y + self.top_child.bbox.height
         self.right_child.bbox.height = self.bbox.height - (self.top_child.bbox.height + self.bottom_child.bbox.height)
-        self.right_child.update(self.bbox)
+        self.right_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.right_child.update()
 
         self.center_child.bbox.x = self.bbox.x + self.left_child.bbox.width
         self.center_child.bbox.y = self.bbox.y + self.top_child.bbox.height
         self.center_child.bbox.width = self.bbox.width - (self.left_child.bbox.width + self.right_child.bbox.width)
         self.center_child.bbox.height = self.bbox.height - (self.top_child.bbox.height + self.bottom_child.bbox.height)
-        self.center_child.update(self.bbox)
+        self.center_child.set_clip_region(self.clip_region.get_intersection(self.bbox))
+        self.center_child.update()
 
     # Sets the docked child
     def set_child_dock(self, child, dock_dir):
@@ -73,7 +78,7 @@ class GUIDockLayout(GUILayout):
             self.bottom_child = child
         elif dock_dir == GUIDockLayout.CENTER:
             self.center_child = child
-        self.update(self.bbox)
+        self.update()
 
     # Checks if this component contains a point in screen space, then propagates to children
     def get_selected_component(self, x, y):
@@ -95,7 +100,7 @@ class GUIDockLayout(GUILayout):
         for child in children:
             if child is not None:
                 child.add_render()
-        self.update(self.bbox)
+        self.update()
 
     def stop_render(self):
         self.rendering = False
@@ -103,4 +108,4 @@ class GUIDockLayout(GUILayout):
         for child in children:
             if child is not None:
                 child.stop_render()
-        self.update(self.bbox)
+        self.update()

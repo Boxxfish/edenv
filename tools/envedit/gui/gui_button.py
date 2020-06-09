@@ -22,15 +22,15 @@ class GUIButton(GUIFrame):
     def set_normal_color(self, normal_color):
         self.normal_color = normal_color
         self.bg_color = self.normal_color
-        self.update(self.bbox)
+        self.update()
 
     def set_pressed_color(self, pressed_color):
         self.pressed_color = pressed_color
-        self.update(self.bbox)
+        self.update()
 
     def set_hover_color(self, hover_color):
         self.hover_color = hover_color
-        self.update(self.bbox)
+        self.update()
 
     def handle_left_pressed(self):
         self.set_bg_color(self.pressed_color)

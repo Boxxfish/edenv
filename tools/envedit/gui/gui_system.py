@@ -171,7 +171,7 @@ class GUISystem(DirectObject):
     # This should NEVER be called from a component's update
     @staticmethod
     def update_all():
-        GUISystem.gui_system.window.update(BoundingBox())
+        GUISystem.gui_system.window.update()
 
     # Creates a context menu at the current cursor location
     # Returns a component
