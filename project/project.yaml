@@ -9,3 +9,7 @@ components:
  Armature: components.armature
  CubeCollider: components.cube_collider
  SphereCollider: components.sphere_collider
+ Rigidbody: components.rigidbody
+ HingeConstraint: components.hinge_constraint
+ PointConstraint: components.point_constraint
+ ConeConstraint: components.cone_constraint
