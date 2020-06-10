@@ -44,16 +44,24 @@ class EComponent:
         component_dict["values"] = self.property_vals
         return component_dict
 
+    # Called when component must change and node isn't selected
     def on_gui_change(self):
         pass
 
+    # Called when component must change and node is selected
     def on_gui_change_selected(self):
         pass
 
+    # Called every frame
     def on_gui_update(self):
         pass
 
+    # Called when component or node is removed
     def on_gui_remove(self):
+        pass
+
+    # Called at the beginning of the trial
+    def start(self):
         pass
 
     # Returns the component from a script path

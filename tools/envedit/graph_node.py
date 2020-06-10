@@ -13,12 +13,13 @@ from tools.envedit.transform import Transform
 
 class GraphNode:
 
-    def __init__(self, name="", data=[]):
+    def __init__(self, name="", data=[], use_gui=True):
         self.transform = Transform()
         self.transform.on_matrix_update = self.on_matrix_update
         self.children = []
         self.parent = None
         self.data = data
+        self.use_gui = use_gui
         for component in data:
             component.node = self
         self.name = name
@@ -48,19 +49,22 @@ class GraphNode:
     def add_component(self, component):
         component.node = self
         self.data.append(component)
-        component.on_gui_change()
+        if self.use_gui:
+            component.on_gui_change()
 
     # Adds a component to the node at index
     def insert_component(self, component, index):
         component.node = self
         self.data.insert(index, component)
-        component.on_gui_change()
+        if self.use_gui:
+            component.on_gui_change()
 
     # Removes a component from the node
     def remove_component(self, component):
         component.node = None
         self.data.remove(component)
-        component.on_gui_remove()
+        if self.use_gui:
+            component.on_gui_remove()
 
     # Removes all children from this node.
     def clear(self):
@@ -81,6 +85,11 @@ class GraphNode:
     def component_gui_update(self):
         for component in self.data:
             component.on_gui_update()
+
+    # Triggers "start" on all attached components
+    def start_components(self):
+        for component in self.data:
+            component.start()
 
     # Finds a child node in the graph
     def find_child(self, node):
@@ -106,7 +115,8 @@ class GraphNode:
     def on_matrix_update(self, matrix):
         for child in self.children:
             child.transform.set_parent_matrix(matrix)
-            child.component_property_changed()
+            if self.use_gui:
+                child.component_property_changed()
 
     # Processes the scene graph and returns a dict representation
     @staticmethod
@@ -125,10 +135,11 @@ class GraphNode:
 
     # Processes the file dictionary and returns the corresponding graph node
     @staticmethod
-    def dict_to_scene_graph(node_dict):
+    def dict_to_scene_graph(node_dict, use_gui=True):
         node = GraphNode()
         node.name = node_dict["name"]
         node.data = []
+        node.use_gui = use_gui
         node.transform.load_from_dict(node_dict["transform"])
 
         pos_component = EComponent.from_script("components.position")
@@ -148,6 +159,6 @@ class GraphNode:
             node.add_component(component)
 
         for child in node_dict["children"]:
-            node.add_child(GraphNode.dict_to_scene_graph(child))
+            node.add_child(GraphNode.dict_to_scene_graph(child, use_gui))
 
         return node

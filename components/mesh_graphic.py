@@ -57,16 +57,21 @@ class MeshGraphic(EComponent):
         if self.armature is not None:
             self.mesh_gizmo.set_bone_matrices(self.armature.bone_mats)
 
-    # Called when the component is removed
     def on_gui_remove(self):
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.destroy()
             GizmoSystem.remove_gizmo(self.mesh_gizmo)
             self.mesh_gizmo = None
 
-    # Called when the scene starts
-    def start(self, properties):
-        self.mesh = properties["mesh"]
+    def start(self):
+        if self.mesh is not self.property_vals["mesh"]:
+            self.mesh = self.property_vals["mesh"]
+            self.gen_mesh_gizmo(self.mesh)
+
+    # TODO: Change this to event handler
+    def update(self):
+        if self.mesh_gizmo is not None:
+            self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
     # Called when mesh gizmo is pressed
     def pressed_callback(self):

@@ -40,7 +40,6 @@ class Position(EComponent):
                 "rot": PropertyType.VECTOR3,
                 "scale": PropertyType.VECTOR3}
 
-    # Called when component property is changed and the component isn't selected
     def on_gui_change(self):
         self.node.transform.update()
 
@@ -76,7 +75,6 @@ class Position(EComponent):
             self.z_handle_gizmo.destroy()
             self.z_handle_gizmo = None
 
-    # Called when component property is changed and the component is selected
     def on_gui_change_selected(self):
         # Set transform properties
         self.node.transform.set_translation(np.array([float(self.property_vals["pos"][0]),
@@ -354,6 +352,5 @@ class Position(EComponent):
         self.z_handle_gizmo.destroy()
         self.z_handle_gizmo = None
 
-    # Called when the scene starts
-    def start(self, properties):
+    def start(self):
         pass
