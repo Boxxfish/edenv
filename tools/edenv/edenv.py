@@ -10,6 +10,7 @@ from os import path
 import yaml
 from tools.envedit import envedit as edenv_envedit
 from tools.resimport import resimport as edenv_resimport
+from tools.run import run as edenv_run
 
 
 @click.group()
@@ -69,12 +70,20 @@ def list():
 def envedit():
     edenv_envedit.main()
 
-
 @main.command()
 @click.argument("files", nargs=-1, type=click.File('rb'))
 @click.pass_context
 def resimport(ctx, files):
     ctx.forward(edenv_resimport.resimport)
+
+@main.command()
+@click.option("-i", "--interactive/--no-interactive", default=False)
+@click.option("-c", "--config", type=click.File('r'))
+@click.option("-t", "--trials", type=int, default=-1)
+@click.option("-v", "--visualize", type=int, default=10)
+@click.pass_context
+def run(ctx, interactive, config, trials, visualize):
+    ctx.forward(edenv_run.run)
 
 if __name__ == "__main__":
     main()
