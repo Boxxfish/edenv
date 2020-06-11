@@ -8,6 +8,7 @@ from panda3d.core import PTA_LMatrix4f
 from tools.envedit import helper
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.property_type import PropertyType
+from tools.run.event import handler
 
 
 class Armature(EComponent):
@@ -55,6 +56,36 @@ class Armature(EComponent):
             else:
                 self.nodes[i] = None
         self.update_bone_matrices()
+
+    def start(self):
+        # Set up bind matrices
+        for bind_matrix in self.property_vals["bind_matrices"]:
+            mat = np.identity(4)
+            elements = bind_matrix.split(",")
+            for x in range(4):
+                for y in range(4):
+                    mat[y][x] = float(elements[y * 4 + x])
+            self.bind_mats.append(mat)
+
+        # Save nodes
+        nodes_len = len(self.property_vals["nodes"])
+        self.nodes = [None for _ in range(nodes_len)]
+        for i in range(nodes_len):
+            node = self.node.find_child_by_name(self.property_vals["nodes"][i])
+            if node is not None:
+                self.nodes[i] = node
+            else:
+                self.nodes[i] = None
+
+        # Set up bone matrices
+        self.update_bone_matrices()
+
+    @handler()
+    def handle_update(self):
+        for i in range(len(self.nodes)):
+            node = self.nodes[i]
+            bind_mat = self.bind_mats[i]
+            self.bone_mats.setElement(i, helper.np_mat4_to_panda(node.transform.get_world_matrix().dot(bind_mat)))
 
     # Updates bone matrices
     def update_bone_matrices(self):

@@ -66,13 +66,30 @@ class MeshGraphic(EComponent):
 
     def start(self):
         if self.mesh is not self.property_vals["mesh"]:
+
+            # Generate mesh
             self.mesh = self.property_vals["mesh"]
             self.gen_mesh_gizmo(self.mesh)
+
+            # Find root node
+            root_node = self.node
+            while root_node.parent is not None:
+                root_node = root_node.parent
+
+            # Get armature
+            armature_node = root_node.find_child_by_name(self.property_vals["armature_node"])
+            if armature_node is not None:
+                for component in armature_node.data:
+                    if type(component) is Armature:
+                        self.armature = component
 
     @handler()
     def handle_update(self):
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
+
+            if self.armature is not None:
+                self.mesh_gizmo.set_bone_matrices(self.armature.bone_mats)
 
     # Called when mesh gizmo is pressed
     def pressed_callback(self):

@@ -23,6 +23,11 @@ class Transform:
         self.parent_matrix = matrix
         self.update()
 
+    # Sets the world matrix of the transform
+    def set_world_matrix(self, matrix):
+        self.set_matrix(np.linalg.inv(self.parent_matrix).dot(matrix))
+        self.update()
+
     # Sets the local matrix of the transform and sets its transform properties
     def set_matrix(self, matrix):
         self.local_matrix = matrix

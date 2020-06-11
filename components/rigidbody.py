@@ -37,4 +37,4 @@ class Rigidbody(EComponent):
     @handler()
     def handle_update(self):
         if self.body_path is not None:
-            self.node.transform.set_matrix(helper.panda_mat4_to_np(self.body_path.getMat()))
+            self.node.transform.set_world_matrix(helper.panda_mat4_to_np(self.body_path.getMat()))
