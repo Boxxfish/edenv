@@ -8,8 +8,10 @@ from pathlib import Path
 import sys
 import yaml
 from direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBaseGlobal import globalClock
 from direct.task.Task import Task
-from panda3d.core import PandaNode, DirectionalLight
+from panda3d.bullet import BulletWorld
+from panda3d.core import PandaNode, DirectionalLight, LVector3f
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
@@ -52,6 +54,12 @@ class Player(ShowBase):
         # Add camera controller
         self.cam_controller = CameraController(self, self.render, self.camera)
 
+        # Set up physics system
+        self.physics_world = BulletWorld()
+        self.physics_world.setGravity(LVector3f(0, 0, -9.81))
+        EComponent.physics_world = self.physics_world
+        self.add_task(self.physics_task)
+
         # Load environment
         with open(env_name + ".json", "r") as file:
             scene_dict = json.load(file)
@@ -78,6 +86,12 @@ class Player(ShowBase):
     # Updates components every frame
     def update_task(self, task):
         event.send_event("main", "update")
+        return Task.cont
+
+    # Updates the physics engine
+    def physics_task(self, task):
+        dt = globalClock.getDt()
+        self.physics_world.doPhysics(dt)
         return Task.cont
 
 

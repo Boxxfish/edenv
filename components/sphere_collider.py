@@ -5,7 +5,10 @@ A sphere shaped collider for the physics engine.
 import math
 
 import numpy as np
+from panda3d.bullet import BulletSphereShape
+from panda3d.core import TransformState, LVector3f
 
+from components.rigidbody import Rigidbody
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gizmos.wire_circle_gizmo import WireCircleGizmo
 from tools.envedit.property_type import PropertyType
@@ -67,6 +70,11 @@ class SphereCollider(EComponent):
         z_circle_transform.set_translation(center_vector)
         self.z_circle_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(z_circle_transform.get_mat()))
 
-    def update(self):
-        # TODO: Implement physics engine integration
-        pass
+    def start(self):
+        for component in self.node.data:
+            if isinstance(component, Rigidbody):
+                radius = float(self.property_vals["radius"]) / 2
+                shape = BulletSphereShape(radius)
+                component.body_path.node().add_shape(shape, TransformState.make_pos(LVector3f(float(self.property_vals["center"][0]),
+                                                                                              float(self.property_vals["center"][1]),
+                                                                                              float(self.property_vals["center"][2]))))

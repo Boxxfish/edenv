@@ -102,6 +102,7 @@ class Transform:
         self.trans = np.array([local_trans_mat[0][3],
                                local_trans_mat[1][3],
                                local_trans_mat[2][3]])
+        self.update()
 
     # Returns the local rotation of the transform
     def get_rotation(self):
