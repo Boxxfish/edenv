@@ -11,6 +11,7 @@ from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
 from tools.envedit.property_type import PropertyType
+from tools.run.event import handler
 
 
 class MeshGraphic(EComponent):
@@ -68,8 +69,8 @@ class MeshGraphic(EComponent):
             self.mesh = self.property_vals["mesh"]
             self.gen_mesh_gizmo(self.mesh)
 
-    # TODO: Change this to event handler
-    def update(self):
+    @handler()
+    def handle_update(self):
         if self.mesh_gizmo is not None:
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 

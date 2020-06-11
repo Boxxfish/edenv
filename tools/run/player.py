@@ -8,11 +8,14 @@ from pathlib import Path
 import sys
 import yaml
 from direct.showbase.ShowBase import ShowBase
+from direct.task.Task import Task
 from panda3d.core import PandaNode, DirectionalLight
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
 from tools.envedit.graph_node import GraphNode
+from tools.run import event
+from tools.run.event import register_component
 
 
 class Player(ShowBase):
@@ -54,13 +57,28 @@ class Player(ShowBase):
             scene_dict = json.load(file)
             self.root_node = GraphNode.dict_to_scene_graph(scene_dict, use_gui=False)
 
-            self.start_node(self.root_node)
+            self.setup_node(self.root_node)
 
-    # Starts all nodes
-    def start_node(self, node):
+        # Set up update task
+        self.add_task(self.update_task)
+
+    # Sets up all nodes
+    def setup_node(self, node):
+        # Start all the components
         node.start_components()
+
+        # Register components to event system
+        for component in node.data:
+            register_component(component)
+
+        # Propegate to children
         for child in node.children:
-            self.start_node(child)
+            self.setup_node(child)
+
+    # Updates components every frame
+    def update_task(self, task):
+        event.send_event("main", "update")
+        return Task.cont
 
 
 def run(env_name):
