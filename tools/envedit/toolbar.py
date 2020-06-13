@@ -42,15 +42,20 @@ class Toolbar(GUIFrame):
         new_button.on_release = self.file_new_option_handler
         file_dropdown.menu.child.add_child(new_button)
 
+        open_button = GUIMenuItem()
+        open_button.child.set_text("Open...")
+        open_button.on_release = self.file_open_option_handler
+        file_dropdown.menu.child.add_child(open_button)
+
         save_button = GUIMenuItem()
         save_button.child.set_text("Save")
         save_button.on_release = self.file_save_option_handler
         file_dropdown.menu.child.add_child(save_button)
 
-        open_button = GUIMenuItem()
-        open_button.child.set_text("Open")
-        open_button.on_release = self.file_open_option_handler
-        file_dropdown.menu.child.add_child(open_button)
+        save_as_button = GUIMenuItem()
+        save_as_button.child.set_text("Save As...")
+        save_as_button.on_release = self.file_save_as_option_handler
+        file_dropdown.menu.child.add_child(save_as_button)
 
         buttons_layout.add_child(file_dropdown)
 
@@ -123,6 +128,15 @@ class Toolbar(GUIFrame):
                 self.envedit_data.save(file_path)
         else:
             self.envedit_data.save()
+
+    def file_save_as_option_handler(self, item):
+        # Open file dialog
+        filetypes = [("JSON", "*.json")]
+        file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
+
+        # Save file
+        if file_path != "":
+            self.envedit_data.save(file_path)
 
     def file_open_option_handler(self, item):
         # Open file dialog
