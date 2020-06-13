@@ -6,10 +6,12 @@ Controls the component viewer.
 from tools.envedit.component_drawer import ComponentDrawer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.gui.gui_component import GUIComponent
+from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_dropdown import GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_label import GUILabel
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
+from tools.envedit.gui.gui_scroll_container import GUIScrollContainer
 from tools.envedit.gui.gui_stack_layout import GUIStackLayout
 from tools.envedit.gui.gui_system import GUISystem
 
@@ -26,8 +28,11 @@ class ComponentViewer(GUIFrame):
         self.bbox.width = 300
         self.padding = 10
 
+        master_layout = GUIDockLayout()
+        self.set_child(master_layout)
+
         self.layout = GUIStackLayout()
-        self.set_child(self.layout)
+        master_layout.set_child_dock(self.layout, GUIDockLayout.TOP)
 
         title = GUILabel()
         title.text_size = 30
@@ -42,8 +47,11 @@ class ComponentViewer(GUIFrame):
         self.add_component_dropdown = GUIDropdown()
         self.add_component_dropdown.child.set_text("Add Component...")
 
+        scroll_container = GUIScrollContainer(scroll_v=True, scroll_h=True)
+        master_layout.set_child_dock(scroll_container, GUIDockLayout.CENTER)
+
         self.component_layout = GUIStackLayout()
-        self.layout.add_child(self.component_layout)
+        scroll_container.set_child(self.component_layout)
 
     # Sets up the components for the viewer
     def setup_components(self):
