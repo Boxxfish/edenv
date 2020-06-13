@@ -10,7 +10,8 @@ import random
 import numpy as np
 from direct.showbase.Loader import Loader, SamplerState
 from panda3d.core import GeomVertexData, GeomVertexFormat, Geom, GeomVertexWriter, GeomTriangles, GeomNode, \
-    TextureAttrib, RenderState, LMatrix4f, TransformState, GeomVertexArrayFormat, Shader, Filename, PTA_LMatrix4f
+    TextureAttrib, RenderState, LMatrix4f, TransformState, GeomVertexArrayFormat, Shader, Filename, PTA_LMatrix4f, \
+    OmniBoundingVolume
 
 from tools.envedit import helper
 from tools.envedit.edenv_component import EComponent
@@ -143,6 +144,10 @@ class MeshGizmo(Gizmo):
             for _ in range(100):
                 bone_mats.push_back(helper.np_mat4_to_panda(np.identity(4)))
             self.geom_path.set_shader_input(f"boneMats", bone_mats)
+
+            # Disable culling
+            self.geom_path.node().setBounds(OmniBoundingVolume())
+            self.geom_path.node().setFinal(True)
 
     # Returns the geometry node path
     def get_geom(self):
