@@ -28,6 +28,7 @@ class GUITextBox(GUIFrame):
 
         self.use_single_label()
 
+        self.on_selected = None         # Called when textbox is selected
         self.on_text_changed = None     # Called when text is changed
         self.on_lost_focus = None       # Called when textbox loses focus
         self.validate_text = None       # Called to check if text is in correct format
@@ -48,7 +49,6 @@ class GUITextBox(GUIFrame):
                 self.child.bbox.x = self.bbox.x - (self.child.children[0].bbox.width - self.bbox.width) - 4
             self.child.set_clip_region(self.clip_region.get_intersection(self.bbox))
             self.child.update()
-
 
     # Sets the child element to a single text label
     def use_single_label(self):
@@ -121,6 +121,9 @@ class GUITextBox(GUIFrame):
         self.use_stacked_labels()
         self.set_bg_color(self.focus_color)
         GUISystem.set_focus(self)
+
+        if self.on_selected is not None:
+            self.on_selected(self)
 
     def handle_lost_focus(self):
         self.focused = False

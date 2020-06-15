@@ -3,6 +3,10 @@ A GUI component that displays properties of the EDEnv component.
 
 @author Ben Giacalone
 """
+import os
+from pathlib import Path
+from tkinter import filedialog
+
 from tools.envedit.gui.gui_button import GUIButton
 from tools.envedit.gui.gui_component import GUIComponent
 from tools.envedit.gui.gui_dock_layout import GUIDockLayout
@@ -124,7 +128,7 @@ class ComponentDrawer(GUIFrame):
                     property_val = GUITextBox()
                     property_val.data = property
                     property_val.set_text(self.component.property_vals[property])
-                    property_val.on_text_changed = self.text_change_handler
+                    property_val.on_selected = self.file_open_handler
                     self.property_fields[property] = property_val
                     property_layout.add_child(property_val)
                 elif property_type == PropertyType.ARRAY:
@@ -330,3 +334,20 @@ class ComponentDrawer(GUIFrame):
             property_val.children[0].text_box.set_text(self.component.property_vals[property_name][0])
             property_val.children[2].text_box.set_text(self.component.property_vals[property_name][1])
             property_val.children[4].text_box.set_text(self.component.property_vals[property_name][2])
+
+    # Handles file property type being clicked
+    def file_open_handler(self, text_box):
+        file_path = filedialog.askopenfilename()
+        if file_path != "":
+            file_path = Path(file_path)
+            rel_path = file_path.relative_to(Path(os.getcwd()) / "resources")
+            text_box.set_text(str(rel_path.parent / rel_path.stem))
+
+            if isinstance(text_box.data, dict):
+                self.component.property_vals[text_box.data["parent"]][text_box.data["index"]] = text_box.text
+            else:
+                self.component.property_vals[text_box.data] = text_box.text
+
+            self.component.node.component_property_changed_selected()
+            self.envedit_data.modify()
+            self.envedit_data.update()
