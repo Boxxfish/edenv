@@ -36,7 +36,7 @@ class EComponent:
         elif property_type == PropertyType.ARRAY:
             return [""]
         elif property_type == PropertyType.VECTOR3:
-            return [0, 0, 0]
+            return ["0", "0", "0"]
 
     # Returns a dictionary with the values of the component
     def to_dict(self):
