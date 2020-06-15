@@ -10,6 +10,7 @@ from panda3d.core import TransformState, LVector3f
 
 from components.rigidbody import Rigidbody
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.wire_circle_gizmo import WireCircleGizmo
 from tools.envedit.property_type import PropertyType
 from tools.envedit.transform import Transform
@@ -69,6 +70,20 @@ class SphereCollider(EComponent):
         z_circle_transform.set_rotation(np.array([math.radians(90), 0, 0]))
         z_circle_transform.set_translation(center_vector)
         self.z_circle_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(z_circle_transform.get_mat()))
+
+    def on_gui_remove(self):
+        if self.x_circle_gizmo is not None:
+            self.x_circle_gizmo.destroy()
+            self.y_circle_gizmo.destroy()
+            self.z_circle_gizmo.destroy()
+
+            GizmoSystem.remove_gizmo(self.x_circle_gizmo)
+            GizmoSystem.remove_gizmo(self.y_circle_gizmo)
+            GizmoSystem.remove_gizmo(self.z_circle_gizmo)
+
+            self.x_circle_gizmo = None
+            self.y_circle_gizmo = None
+            self.z_circle_gizmo = None
 
     def start(self):
         for component in self.node.data:

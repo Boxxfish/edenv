@@ -9,6 +9,7 @@ from panda3d.core import LVector3f, TransformState
 from components.rigidbody import Rigidbody
 from tools.envedit import helper
 from tools.envedit.edenv_component import EComponent
+from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.wire_cube_gizmo import WireCubeGizmo
 from tools.envedit.property_type import PropertyType
 from tools.envedit.transform import Transform
@@ -46,6 +47,12 @@ class CubeCollider(EComponent):
                                                  float(self.property_vals["center"][1]),
                                                  float(self.property_vals["center"][2])]))
         self.cube_gizmo.set_world_matrix(self.node.transform.get_world_matrix().dot(cube_transform.get_mat()))
+
+    def on_gui_remove(self):
+        if self.cube_gizmo is not None:
+            self.cube_gizmo.destroy()
+            GizmoSystem.remove_gizmo(self.cube_gizmo)
+            self.cube_gizmo = None
 
     def start(self):
         for component in self.node.data:
