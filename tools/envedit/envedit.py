@@ -6,6 +6,8 @@ Environment editor for EDEnv.
 from os import path
 from pathlib import Path
 import sys
+from tkinter import filedialog
+
 import numpy as np
 import yaml
 from direct.showbase.ShowBase import ShowBase
@@ -109,6 +111,11 @@ class EnvEdit(ShowBase):
         # Add task to update nodes
         self.add_task(self.update_nodes)
 
+        # Set up event handlers for key combinations
+        self.accept("control-n", self.handle_new)
+        self.accept("control-o", self.handle_open)
+        self.accept("control-s", self.handle_save)
+
         self.update_gui()
 
     # Updates the GUI after a change to the scene
@@ -137,6 +144,38 @@ class EnvEdit(ShowBase):
         node.component_gui_update()
         for child in node.children:
             self.update_node(child)
+
+    def handle_new(self):
+        # Reset the scene root
+        self.envedit_data.scene_root.clear()
+        self.envedit_data.update()
+
+        # TODO: When scene data is reset, if the dirt flag is set, bring up save dialog
+
+    def handle_open(self):
+        # Open file dialog
+        filetypes = [("JSON", "*.json")]
+        file_path = filedialog.askopenfilename(filetypes=filetypes, defaultextension=filetypes)
+
+        # Load file
+        if file_path != "":
+            for child in self.envedit_data.panda_root_node.children:
+                NodePath(child).removeNode()
+            self.envedit_data.load(file_path)
+
+        # TODO: When scene data is loaded, if the dirt flag is set, bring up save dialog
+
+    def handle_save(self):
+        if self.envedit_data.save_path is None:
+            # Open file dialog
+            filetypes = [("JSON", "*.json")]
+            file_path = filedialog.asksaveasfilename(filetypes=filetypes, defaultextension=filetypes)
+
+            # Save file
+            if file_path != "":
+                self.envedit_data.save(file_path)
+        else:
+            self.envedit_data.save()
 
 
 def main():
