@@ -160,6 +160,12 @@ class GraphViewer(GUIFrame):
             ren_node_button.data = item
             menu.child.add_child(ren_node_button)
 
+        import_node_button = GUIMenuItem()
+        import_node_button.child.set_text("Import Node Tree")
+        import_node_button.on_release = self.import_node_handler
+        import_node_button.data = item
+        menu.child.add_child(import_node_button)
+
         export_node_button = GUIMenuItem()
         export_node_button.child.set_text("Export Node Tree")
         export_node_button.on_release = self.export_node_handler
@@ -222,6 +228,20 @@ class GraphViewer(GUIFrame):
             file_dict = GraphNode.scene_graph_to_dict(item.data.data)
             with open(file_path, "w") as file:
                 json.dump(file_dict, file)
+
+    # Handles the "import node tree" option being selected
+    def import_node_handler(self, item):
+        # Open file dialog
+        filetypes = [("JSON", "*.json")]
+        file_path = filedialog.askopenfilename(filetypes=filetypes, defaultextension=filetypes)
+
+        # Open graph node
+        if file_path != "":
+            with open(file_path, "r") as file:
+                file_json = json.load(file)
+                imported_node = GraphNode.dict_to_scene_graph(file_json)
+                item.data.data.add_child(imported_node)
+                self.envedit_data.update()
 
     # Handles losing focus of renaming text box
     def rename_lost_focus(self, item):
