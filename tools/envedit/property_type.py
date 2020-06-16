@@ -15,3 +15,4 @@ class PropertyType(Enum):
     HIDDEN = auto()
     ARRAY = auto()
     VECTOR3 = auto()
+    NODE = auto()

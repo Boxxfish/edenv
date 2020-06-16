@@ -241,8 +241,15 @@ class GraphViewer(GUIFrame):
         # Open graph node
         if file_path != "":
             with open(file_path, "r") as file:
+                # Import sub tree
                 file_json = json.load(file)
                 imported_node = GraphNode.dict_to_scene_graph(file_json)
+
+                # Replace NODE property to proper ones
+                conv_dict = GraphNode.replace_id(imported_node)
+                GraphNode.replace_node_props(imported_node, conv_dict)
+
+                # Add sub tree to graph
                 item.data.data.add_child(imported_node)
                 self.envedit_data.update()
 

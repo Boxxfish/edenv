@@ -37,6 +37,8 @@ class EComponent:
             return [""]
         elif property_type == PropertyType.VECTOR3:
             return ["0", "0", "0"]
+        elif property_type == PropertyType.NODE:
+            return "0000000000000000"
 
     # Returns a dictionary with the values of the component
     def to_dict(self):

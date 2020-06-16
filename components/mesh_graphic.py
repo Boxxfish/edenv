@@ -26,7 +26,7 @@ class MeshGraphic(EComponent):
     @staticmethod
     def get_properties():
         return {"mesh": PropertyType.FILE,
-                "armature_node": PropertyType.STRING}
+                "armature_node": PropertyType.NODE}
 
     def on_gui_change(self):
         # Only change mesh if it's different
@@ -38,7 +38,7 @@ class MeshGraphic(EComponent):
             self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 
-            armature_node = EnveditData.envedit_data.scene_root.find_child_by_name(self.property_vals["armature_node"])
+            armature_node = EnveditData.envedit_data.scene_root.find_child_by_id(self.property_vals["armature_node"])
             if armature_node is not None:
                 for component in armature_node.data:
                     if type(component) is Armature:
@@ -77,7 +77,7 @@ class MeshGraphic(EComponent):
                 root_node = root_node.parent
 
             # Get armature
-            armature_node = root_node.find_child_by_name(self.property_vals["armature_node"])
+            armature_node = root_node.find_child_by_id(self.property_vals["armature_node"])
             if armature_node is not None:
                 for component in armature_node.data:
                     if type(component) is Armature:

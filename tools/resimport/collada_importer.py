@@ -144,7 +144,7 @@ class ColladaImporter:
             for y in range(4):
                 for x in range(4):
                     bind_array.append(str(bind_mat[y][x]))
-            joint_node_dict[scene_node.xmlnode.attrib["sid"]] = {"name": node.name, "bind_mat": ",".join(bind_array)}
+            joint_node_dict[scene_node.xmlnode.attrib["sid"]] = {"id": node.id, "name": node.name, "bind_mat": ",".join(bind_array)}
 
         # Add the transform of the node
         if hasattr(scene_node, "matrix"):
@@ -167,7 +167,7 @@ class ColladaImporter:
                     if hasattr(child, "controller"):
                         mesh_renderer = EComponent.from_script("components.mesh_graphic")
                         mesh_renderer.property_vals["mesh"] = folder_name + "/" + child.controller.geometry.name
-                        mesh_renderer.property_vals["armature_node"] = joint_node_dict[child.controller.sourcebyid[child.controller.joint_source][0]]["name"]
+                        mesh_renderer.property_vals["armature_node"] = joint_node_dict[child.controller.sourcebyid[child.controller.joint_source][0]]["id"]
                         node.data.append(mesh_renderer)
 
                         # Set bind shape matrix
