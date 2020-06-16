@@ -3,11 +3,16 @@ Envedit's toolbar.
 
 @author Ben Giacalone
 """
+import subprocess
+from pathlib import Path
+
 from panda3d.core import NodePath
 
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.graph_node import GraphNode
 from tools.envedit.gui.gui_button import GUIButton
+from tools.envedit.gui.gui_component import GUIComponent
+from tools.envedit.gui.gui_dock_layout import GUIDockLayout
 from tools.envedit.gui.gui_dropdown import GUIDropdown
 from tools.envedit.gui.gui_frame import GUIFrame
 from tools.envedit.gui.gui_menu_item import GUIMenuItem
@@ -71,9 +76,12 @@ class Toolbar(GUIFrame):
         middle_border.bbox.height = 1
         self.child.add_child(middle_border)
 
+        bottom_bar_layout = GUIDockLayout()
+        bottom_bar_layout.bbox.height = 28
+        self.child.add_child(bottom_bar_layout)
+
         icons_layout = GUIStackLayout(vertical=False)
-        icons_layout.bbox.height = 28
-        self.child.add_child(icons_layout)
+        bottom_bar_layout.set_child_dock(icons_layout, GUIDockLayout.LEFT)
 
         translate_button = GUIButton()
         translate_button.bbox.width = 30
@@ -101,6 +109,23 @@ class Toolbar(GUIFrame):
         scale_button.set_bg_image("scale_icon.png")
         scale_button.on_click = self.scale_button_handler
         icons_layout.add_child(scale_button)
+
+        play_layout = GUIStackLayout(vertical=False)
+        bottom_bar_layout.set_child_dock(play_layout, GUIDockLayout.RIGHT)
+
+        play_button = GUIButton()
+        play_button.bbox.width = 30
+        play_button.bbox.height = 30
+        play_button.set_normal_color((0.2, 0.8, 0.2, 0.9))
+        play_button.set_hover_color((0.2, 0.9, 0.2, 0.9))
+        play_button.set_pressed_color((0.2, 0.5, 0.2, 0.9))
+        play_button.set_bg_image("play_icon.png")
+        play_button.on_click = self.play_button_handler
+        play_layout.add_child(play_button)
+
+        play_spacer = GUIComponent()
+        play_spacer.bbox.width = 150
+        play_layout.add_child(play_spacer)
 
         bottom_border = GUIFrame()
         bottom_border.set_bg_color((0.2, 0.2, 0.2, 1))
@@ -159,3 +184,8 @@ class Toolbar(GUIFrame):
 
     def scale_button_handler(self, button):
         self.envedit_data.set_transform_gizmo(EnveditData.SCALE_GIZMO)
+
+    def play_button_handler(self, button):
+        run_path = Path(__file__).parent.parent / "run/run.py"
+        if self.envedit_data.save_path is not None:
+            subprocess.call(["python", str(run_path), "-e", self.envedit_data.save_path[:-5]])
