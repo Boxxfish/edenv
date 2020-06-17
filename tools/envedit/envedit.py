@@ -17,6 +17,7 @@ from panda3d.core import Shader, Filename, PTA_LMatrix4f, PandaNode, Directional
 from tools.envedit import helper
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.center_panel import CenterPanel
+from tools.envedit.component_reloader import ComponentReloader
 from tools.envedit.component_viewer import ComponentViewer
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
@@ -35,6 +36,9 @@ class EnvEdit(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
+
+        # Allows importing components from project folder
+        sys.path.append(".")
 
         # Initial scene setup
         self.disableMouse()
@@ -98,6 +102,7 @@ class EnvEdit(ShowBase):
         window_layout.set_child_dock(self.component_viewer, GUIDockLayout.RIGHT)
         self.component_viewer.set_envedit_data(self.envedit_data)
         self.component_viewer.set_components(config["components"])
+        component_reloader = ComponentReloader(self.component_viewer)
 
         # Add toolbar
         self.toolbar = Toolbar()

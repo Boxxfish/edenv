@@ -95,13 +95,14 @@ class ComponentViewer(GUIFrame):
 
     # Sets the list of components from configuration file
     def set_components(self, components):
+        self.add_component_dropdown.menu.child.clear()
         self.components = components
         # Add "add component" menu items
         for component in self.components:
             component_item = GUIMenuItem()
-            component_item.child.set_text(component)
+            component_item.child.set_text(EComponent.from_script(component).name)
             component_item.on_release = self.add_component_handler
-            component_item.data = self.components[component]
+            component_item.data = component
             self.add_component_dropdown.menu.child.add_child(component_item)
 
     # Handles a component to add being selected

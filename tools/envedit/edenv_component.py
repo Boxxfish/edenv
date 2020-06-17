@@ -4,6 +4,9 @@ Components are backed by a script that specifies its properties.
 
 @author Ben Giacalone
 """
+import pkgutil
+from pathlib import Path
+import importlib
 from tools.envedit.property_type import PropertyType
 
 
@@ -70,22 +73,28 @@ class EComponent:
     # Returns the component from a script path
     @staticmethod
     def from_script(script_path):
-        # Import the first class in the script path
         module_name = script_path.split(".")[-1].title()
         module_name = module_name.replace("_", "")
-        module = __import__(script_path, fromlist=[module_name])
-        component_class = getattr(module, module_name)
-        new_component = component_class()
-        new_component.script_path = script_path
 
-        # Set properties of new component
-        new_component.name = module_name
-        new_component.property_types = component_class.get_properties()
-        new_component.property_vals = {}
-        for property in new_component.property_types:
-            new_component.property_vals[property] = EComponent.get_default_value(new_component.property_types[property])
+        # Check if module exists in path
+        script_spec = importlib.util.find_spec(script_path)
+        if script_spec is not None:
+            # Import the first class in the script path
+            module = __import__(script_path, fromlist=[module_name])
+            importlib.reload(module)
+            component_class = getattr(module, module_name)
+            new_component = component_class()
+            new_component.script_path = script_path
 
-        return new_component
+            # Set properties of new component
+            new_component.name = module_name
+            new_component.property_types = component_class.get_properties()
+            new_component.property_vals = {}
+            for property in new_component.property_types:
+                new_component.property_vals[property] = EComponent.get_default_value(new_component.property_types[property])
+            return new_component
+
+        raise Exception(f"No module \"{script_path}\" exists")
 
     # Creates a new component from a dictionary
     @staticmethod

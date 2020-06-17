@@ -25,6 +25,9 @@ class Player(ShowBase):
     def __init__(self, env_name):
         ShowBase.__init__(self)
 
+        # Allows importing components from project folder
+        sys.path.append(".")
+
         # Initial scene setup
         self.disableMouse()
         self.setBackgroundColor(0.15, 0.15, 0.15, 1)

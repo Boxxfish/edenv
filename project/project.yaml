@@ -2,14 +2,13 @@
 # Configuration file for project
 
 project:
-envs:
 components:
- Position: components.position
- MeshGraphic: components.mesh_graphic
- Armature: components.armature
- CubeCollider: components.cube_collider
- SphereCollider: components.sphere_collider
- Rigidbody: components.rigidbody
- HingeConstraint: components.hinge_constraint
- PointConstraint: components.point_constraint
- ConeConstraint: components.cone_constraint
+ - components.position
+ - components.mesh_graphic
+ - components.armature
+ - components.cube_collider
+ - components.sphere_collider
+ - components.rigidbody
+ - components.hinge_constraint
+ - components.point_constraint
+ - components.cone_constraint
