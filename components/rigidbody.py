@@ -23,7 +23,7 @@ class Rigidbody(EComponent):
         return {"mass": PropertyType.FLOAT}
 
     def start(self):
-        body_node = BulletRigidBodyNode(self.node.name + "_rigid_body")
+        body_node = BulletRigidBodyNode(self.node.id + "_rigid_body")
         body_node.set_mass(float(self.property_vals["mass"]))
         self.body_path = EComponent.panda_root_node.attach_new_node(body_node)
         self.body_path.setPos(helper.np_vec3_to_panda(self.node.transform.get_world_translation()))
