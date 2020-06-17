@@ -5,7 +5,6 @@ Renders a mesh.
 import json
 from pathlib import Path
 
-from components.armature import Armature
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.envedit_data import EnveditData
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
@@ -41,7 +40,7 @@ class MeshGraphic(EComponent):
             armature_node = EnveditData.envedit_data.scene_root.find_child_by_id(self.property_vals["armature_node"])
             if armature_node is not None:
                 for component in armature_node.data:
-                    if type(component) is Armature:
+                    if component.name == "Armature":
                         self.armature = component
 
     def on_gui_change_selected(self):
@@ -80,7 +79,7 @@ class MeshGraphic(EComponent):
             armature_node = root_node.find_child_by_id(self.property_vals["armature_node"])
             if armature_node is not None:
                 for component in armature_node.data:
-                    if type(component) is Armature:
+                    if component.name == "Armature":
                         self.armature = component
 
     @handler()
