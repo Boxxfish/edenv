@@ -3,6 +3,7 @@ Handles hot reloading component list.
 
 @author Ben Giacalone
 """
+import importlib
 import sys
 from pathlib import Path
 
@@ -26,4 +27,12 @@ class ComponentReloader(DirectObject.DirectObject):
         with open("project.yaml", "r") as file:
             config = yaml.load(file, Loader=yaml.FullLoader)
 
+        # Reload modules
+        for script_path in config["components"]:
+            module_name = script_path.split(".")[-1].title()
+            module_name = module_name.replace("_", "")
+            module = __import__(script_path, fromlist=[module_name])
+            importlib.reload(module)
+
+        # Set components for component_viewer
         self.component_viewer.set_components(config["components"])

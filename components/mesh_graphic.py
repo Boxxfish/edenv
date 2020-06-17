@@ -34,7 +34,7 @@ class MeshGraphic(EComponent):
             self.mesh = self.property_vals["mesh"]
             self.gen_mesh_gizmo(self.mesh)
 
-        if self.mesh_gizmo is not None:
+        if self.mesh_gizmo is not None and self.mesh_gizmo.geom_path is not None:
             self.mesh_gizmo.get_geom().setColor((1, 1, 1, 1))
             self.mesh_gizmo.set_world_matrix(self.node.transform.get_world_matrix())
 

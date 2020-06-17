@@ -138,7 +138,7 @@ class MeshGizmo(Gizmo):
             self.geom_path.set_shader_input("object_id", self.object_id)
 
         # Set shader
-        if has_weights:
+        if has_weights and self.geom_path is not None:
             self.geom_path.setTag("shader type", "skinned")
             bone_mats = PTA_LMatrix4f()
             for _ in range(100):

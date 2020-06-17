@@ -81,7 +81,6 @@ class EComponent:
         if script_spec is not None:
             # Import the first class in the script path
             module = __import__(script_path, fromlist=[module_name])
-            importlib.reload(module)
             component_class = getattr(module, module_name)
             new_component = component_class()
             new_component.script_path = script_path
