@@ -25,7 +25,7 @@ class Rigidbody(EComponent):
                 "kinematic": PropertyType.BOOL}
 
     def start(self):
-        self.kinematic = bool(self.property_vals["kinematic"])
+        self.kinematic = self.property_vals["kinematic"].lower() == "true"
         body_node = BulletRigidBodyNode(self.node.id + "_rigid_body")
         body_node.set_mass(float(self.property_vals["mass"]))
         self.body_path = EComponent.panda_root_node.attach_new_node(body_node)
