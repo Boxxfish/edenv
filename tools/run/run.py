@@ -24,7 +24,8 @@ def run(interactive, environment, config, trials, visualize):
 
     # Run player
     if environment != "":
-        player.run(environment)
+        trial_data = {}
+        player.run(environment, trial_data)
 
 
 if __name__ == "__main__":

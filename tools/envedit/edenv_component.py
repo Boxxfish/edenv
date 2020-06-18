@@ -23,6 +23,7 @@ class EComponent:
         self.node = None
         self.script_path = None
         self.physics = Physics(EComponent.physics_world)
+        self.trial = None
         self.component_update_callback = None       # Called when component modifies
 
     # Returns the default value of the field type

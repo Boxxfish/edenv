@@ -18,11 +18,12 @@ from tools.envedit.floor_node import FloorNode
 from tools.envedit.graph_node import GraphNode
 from tools.run import event
 from tools.run.event import register_component
+from tools.run.trial import Trial
 
 
 class Player(ShowBase):
 
-    def __init__(self, env_name):
+    def __init__(self, env_name, trial_data):
         ShowBase.__init__(self)
 
         # Allows importing components from project folder
@@ -68,23 +69,29 @@ class Player(ShowBase):
             scene_dict = json.load(file)
             self.root_node = GraphNode.dict_to_scene_graph(scene_dict, use_gui=False)
 
-            self.setup_node(self.root_node)
+            trial = Trial()
+            trial.data = trial_data
+            trial.trial_finished_callback = self.trial_finished_callback
+            self.setup_node(self.root_node, trial)
 
         # Set up update task
         self.add_task(self.update_task)
 
     # Sets up all nodes
-    def setup_node(self, node):
+    def setup_node(self, node, trial):
+        for component in node.data:
+            # Register components to event system
+            register_component(component)
+
+            # Set trial property of components
+            component.trial = trial
+
         # Start all the components
         node.start_components()
 
-        # Register components to event system
-        for component in node.data:
-            register_component(component)
-
-        # Propegate to children
+        # Propagate to children
         for child in node.children:
-            self.setup_node(child)
+            self.setup_node(child, trial)
 
     # Updates components every frame
     def update_task(self, task):
@@ -97,7 +104,14 @@ class Player(ShowBase):
         self.physics_world.doPhysics(dt)
         return Task.cont
 
+    # Called when trial is finished
+    def trial_finished_callback(self):
+        sys.exit()
 
-def run(env_name):
-    app = Player(env_name)
-    app.run()
+
+def run(env_name, trial_data):
+    app = Player(env_name, trial_data)
+    try:
+        app.run()
+    except SystemExit as e:
+        pass
