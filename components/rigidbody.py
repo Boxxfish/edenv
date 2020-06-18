@@ -17,12 +17,15 @@ class Rigidbody(EComponent):
     def __init__(self):
         EComponent.__init__(self)
         self.body_path = None
+        self.kinematic = False
 
     @staticmethod
     def get_properties():
-        return {"mass": PropertyType.FLOAT}
+        return {"mass": PropertyType.FLOAT,
+                "kinematic": PropertyType.BOOL}
 
     def start(self):
+        self.kinematic = bool(self.property_vals["kinematic"])
         body_node = BulletRigidBodyNode(self.node.id + "_rigid_body")
         body_node.set_mass(float(self.property_vals["mass"]))
         self.body_path = EComponent.panda_root_node.attach_new_node(body_node)
@@ -37,4 +40,12 @@ class Rigidbody(EComponent):
     @handler()
     def handle_update(self):
         if self.body_path is not None:
-            self.node.transform.set_world_matrix(helper.panda_mat4_to_np(self.body_path.getMat()))
+            if self.kinematic:
+                self.body_path.setPos(helper.np_vec3_to_panda(self.node.transform.get_world_translation()))
+                rot = np.degrees(self.node.transform.get_world_rotation())
+                self.body_path.setHpr(LVector3f(rot[1],
+                                                rot[0],
+                                                rot[2]))
+                self.body_path.setScale(helper.np_vec3_to_panda(self.node.transform.get_world_scale()))
+            else:
+                self.node.transform.set_world_matrix(helper.panda_mat4_to_np(self.body_path.getMat()))

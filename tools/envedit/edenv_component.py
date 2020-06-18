@@ -102,4 +102,9 @@ class EComponent:
     def load_from_dict(component_dict):
         new_component = EComponent.from_script(component_dict["script_path"])
         new_component.property_vals = component_dict["values"]
+        property_types = new_component.get_properties()
+        for property in property_types:
+            if property not in new_component.property_vals:
+                property_val = EComponent.get_default_value(property_types[property])
+                new_component.property_vals[property] = property_val
         return new_component
