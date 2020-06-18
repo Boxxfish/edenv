@@ -28,6 +28,11 @@ def handler(event_queue_name="main"):
 
 # Sends event to event queue
 def send_event(event_queue_name, event_name, *args, **kwargs):
+    # If no such handler is registered, quit early
+    if event_queue_name not in HANDLERS or event_name not in HANDLERS[event_queue_name]:
+        return
+
+    # Broadcast the event
     handlers = HANDLERS[event_queue_name][event_name]
     for handler in handlers:
         for component in COMPONENTS:

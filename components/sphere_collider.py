@@ -15,6 +15,7 @@ from tools.envedit.gizmos.sphere_handle_gizmo import SphereHandleGizmo
 from tools.envedit.gizmos.wire_circle_gizmo import WireCircleGizmo
 from tools.envedit.property_type import PropertyType
 from tools.envedit.transform import Transform
+from tools.run.event import handler, send_event
 
 
 class SphereCollider(EComponent):
@@ -34,6 +35,9 @@ class SphereCollider(EComponent):
 
         self.start_size = 0
         self.start_center = 0
+
+        self.rigidbody_component = None
+        self.touching = []
 
     @staticmethod
     def get_properties():
@@ -214,11 +218,33 @@ class SphereCollider(EComponent):
     def start(self):
         for component in self.node.data:
             if isinstance(component, Rigidbody):
+                self.rigidbody_component = component
                 radius = float(self.property_vals["radius"]) / 2
                 shape = BulletSphereShape(radius)
                 component.body_path.node().add_shape(shape, TransformState.make_pos(LVector3f(float(self.property_vals["center"][0]),
                                                                                               float(self.property_vals["center"][1]),
                                                                                               float(self.property_vals["center"][2]))))
+
+    @handler()
+    def handle_update(self):
+        result = self.physics.physics_world.contactTest(self.rigidbody_component.body_path.node())
+        touching = []
+
+        for contact in result.getContacts():
+            id_1 = contact.getNode0().name[:-11]
+            id_2 = contact.getNode1().name[:-11]
+            touching.append(id_2)
+
+            # Check if entered this frame
+            if id_2 not in self.touching:
+                send_event("main", "collision_enter", id_1, id_2)
+
+        # Check if exited this frame
+        for id in self.touching:
+            if id not in touching:
+                send_event("main", "collision_exit", self.node.id, id)
+
+        self.touching = touching
 
     # Handles a sphere being selected
     def handle_sphere_selected(self, data):
