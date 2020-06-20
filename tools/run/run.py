@@ -46,19 +46,22 @@ def run_trials(environment, trials, visualize, pj_script=None):
         while True:
             if pj_script is not None:
                 pass
-            run_player(environment, i % visualize == 0)
+            run_player(environment, i % visualize != 0)
             i = (i + 1) % visualize
     else:
         for i in range(trials):
             if pj_script is not None:
                 pass
-            run_player(environment, i % visualize == 0)
+            run_player(environment, i % visualize != 0)
 
 
 # Runs the player and returns trial data
 def run_player(environment, headless=False):
     trial_data = {}
-    player.run(environment, trial_data)
+    if headless:
+        player.run_headless(environment, trial_data)
+    else:
+        player.run(environment, trial_data)
     return trial_data
 
 

@@ -24,8 +24,8 @@ from tools.run.trial import Trial
 
 class Player(ShowBase):
 
-    def __init__(self, env_name, trial_data):
-        ShowBase.__init__(self)
+    def __init__(self, env_name, trial_data, headless=False):
+        ShowBase.__init__(self, windowType="none" if headless else "onscreen")
         self.manually_quit = True
 
         # Allows importing components from project folder
@@ -38,9 +38,10 @@ class Player(ShowBase):
         EComponent.base = self
 
         # Attach a directional light to the camera
-        self.dir_light = DirectionalLight("cam_dir_light")
-        dir_light_path = self.camera.attach_new_node(self.dir_light)
-        EComponent.panda_root_node.setLight(dir_light_path)
+        if not headless:
+            self.dir_light = DirectionalLight("cam_dir_light")
+            dir_light_path = self.camera.attach_new_node(self.dir_light)
+            EComponent.panda_root_node.setLight(dir_light_path)
 
         # Read the project config file
         config_path = Path("project.yaml")
@@ -52,13 +53,15 @@ class Player(ShowBase):
             config = yaml.load(file, Loader=yaml.FullLoader)
 
         # Add floor
-        self.floor_node = FloorNode(self)
-        floor_path = self.render.attach_new_node(self.floor_node)
-        floor_path.setTwoSided(True)
-        floor_path.set_shader_input("object_id", 0)
+        if not headless:
+            self.floor_node = FloorNode(self)
+            floor_path = self.render.attach_new_node(self.floor_node)
+            floor_path.setTwoSided(True)
+            floor_path.set_shader_input("object_id", 0)
 
         # Add camera controller
-        self.cam_controller = CameraController(self, self.render, self.camera)
+        if not headless:
+            self.cam_controller = CameraController(self, self.render, self.camera)
 
         # Set up physics system
         self.physics_world = BulletWorld()
@@ -117,7 +120,18 @@ class Player(ShowBase):
 
 
 def run(env_name, trial_data):
-    app = Player(env_name, trial_data)
+    app = Player(env_name, trial_data, headless=False)
+    try:
+        app.run()
+    except SystemExit as e:
+        if app.manually_quit:
+            sys.exit()
+        else:
+            app.destroy()
+
+
+def run_headless(env_name, trial_data):
+    app = Player(env_name, trial_data, headless=True)
     try:
         app.run()
     except SystemExit as e:
