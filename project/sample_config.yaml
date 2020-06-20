@@ -1,0 +1,7 @@
+---
+# Sample run configuration
+
+project_script: # Put project script name here.
+environment:    # Put environemnt name here.
+trials:         # Put number of trials here, or -1 for infinite trials.
+visualize:      # Put number of trials before visualizing here.
