@@ -15,6 +15,7 @@ from panda3d.core import PandaNode, DirectionalLight, LVector3f
 from tools.envedit.camera_controller import CameraController
 from tools.envedit.edenv_component import EComponent
 from tools.envedit.floor_node import FloorNode
+from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.graph_node import GraphNode
 from tools.run import event
 from tools.run.event import register_component
@@ -25,6 +26,7 @@ class Player(ShowBase):
 
     def __init__(self, env_name, trial_data):
         ShowBase.__init__(self)
+        self.manually_quit = True
 
         # Allows importing components from project folder
         sys.path.append(".")
@@ -62,7 +64,7 @@ class Player(ShowBase):
         self.physics_world = BulletWorld()
         self.physics_world.setGravity(LVector3f(0, 0, -9.81))
         EComponent.physics_world = self.physics_world
-        self.add_task(self.physics_task)
+        self.taskMgr.add(self.physics_task, "physics_task")
 
         # Load environment
         with open(env_name + ".json", "r") as file:
@@ -75,7 +77,7 @@ class Player(ShowBase):
             self.setup_node(self.root_node, trial)
 
         # Set up update task
-        self.add_task(self.update_task)
+        self.taskMgr.add(self.update_task, "update_task")
 
     # Sets up all nodes
     def setup_node(self, node, trial):
@@ -106,6 +108,11 @@ class Player(ShowBase):
 
     # Called when trial is finished
     def trial_finished_callback(self):
+        self.manually_quit = False
+        self.taskMgr.remove("update_task")
+        self.taskMgr.remove("physics_task")
+        event.COMPONENTS.clear()
+        GizmoSystem.gizmos = [None for _ in range(256)]
         sys.exit()
 
 
@@ -114,4 +121,7 @@ def run(env_name, trial_data):
     try:
         app.run()
     except SystemExit as e:
-        pass
+        if app.manually_quit:
+            sys.exit()
+        else:
+            app.destroy()

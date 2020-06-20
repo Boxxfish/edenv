@@ -188,4 +188,4 @@ class Toolbar(GUIFrame):
     def play_button_handler(self, button):
         run_path = Path(__file__).parent.parent / "run/run.py"
         if self.envedit_data.save_path is not None:
-            subprocess.call(["python", str(run_path), "-e", self.envedit_data.save_path[:-5]])
+            subprocess.call(["python", str(run_path), "-e", self.envedit_data.save_path[:-5], "-t", "1", "-v", "1"])

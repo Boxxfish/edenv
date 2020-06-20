@@ -175,6 +175,7 @@ class CameraController(DirectObject.DirectObject):
     # "Destructor" for camera controller
     def destroy(self):
         self.ignore_all()
+        self.removeAllTasks()
 
     # Returns the world space coordinate of a view space point
     # The world space coordinate is projected onto a 2D plane facing the camera
