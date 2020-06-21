@@ -128,57 +128,53 @@ class SphereCollider(EComponent):
             GizmoSystem.add_gizmo(self.z_max_gizmo)
 
         # Transform circles
-        radius = float(self.property_vals["radius"])
+        world_scale = self.node.transform.get_world_scale()
+        avg_scale = (world_scale[0] + world_scale[1] + world_scale[2]) / 3
+        radius = float(self.property_vals["radius"]) * avg_scale + 0.001
         center_vector = np.array([float(self.property_vals["center"][0]),
                                   float(self.property_vals["center"][1]),
                                   float(self.property_vals["center"][2])])
+        master_transform = Transform()
+        master_transform.set_translation(self.node.transform.get_world_translation() + center_vector)
+        master_transform.set_rotation(self.node.transform.get_world_rotation())
+
         x_circle_transform = Transform()
-        x_circle_transform.set_parent_matrix(self.node.transform.get_world_matrix())
+        x_circle_transform.set_parent_matrix(master_transform.get_mat())
         x_circle_transform.set_scale(np.array([radius, radius, radius]))
-        x_circle_transform.set_translation(center_vector)
+        x_circle_transform.set_rotation(np.array([math.radians(90), 0, 0]))
         self.x_circle_gizmo.set_world_matrix(x_circle_transform.get_world_matrix())
 
         y_circle_transform = Transform()
-        y_circle_transform.set_parent_matrix(self.node.transform.get_world_matrix())
+        y_circle_transform.set_parent_matrix(master_transform.get_mat())
         y_circle_transform.set_scale(np.array([radius, radius, radius]))
         y_circle_transform.set_rotation(np.array([0, math.radians(90), 0]))
-        y_circle_transform.set_translation(center_vector)
         self.y_circle_gizmo.set_world_matrix(y_circle_transform.get_world_matrix())
 
         z_circle_transform = Transform()
-        z_circle_transform.set_parent_matrix(self.node.transform.get_world_matrix())
+        z_circle_transform.set_parent_matrix(master_transform.get_mat())
         z_circle_transform.set_scale(np.array([radius, radius, radius]))
-        z_circle_transform.set_rotation(np.array([math.radians(90), 0, 0]))
-        z_circle_transform.set_translation(center_vector)
         self.z_circle_gizmo.set_world_matrix(z_circle_transform.get_world_matrix())
 
         # Transform sphere handles
-        master_mat = self.node.transform.get_world_matrix().dot(x_circle_transform.get_world_matrix())
         x_min_transform = Transform()
-        x_min_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        x_min_transform.set_translation(np.array([-0.5, 0, 0]))
+        x_min_transform.set_translation(np.array([-0.5, 0, 0]) * np.array([radius, radius, radius]))
         x_max_transform = Transform()
-        x_max_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        x_max_transform.set_translation(np.array([0.5, 0, 0]))
+        x_max_transform.set_translation(np.array([0.5, 0, 0]) * np.array([radius, radius, radius]))
         y_min_transform = Transform()
-        y_min_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        y_min_transform.set_translation(np.array([0, -0.5, 0]))
+        y_min_transform.set_translation(np.array([0, -0.5, 0]) * np.array([radius, radius, radius]))
         y_max_transform = Transform()
-        y_max_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        y_max_transform.set_translation(np.array([0, 0.5, 0]))
+        y_max_transform.set_translation(np.array([0, 0.5, 0]) * np.array([radius, radius, radius]))
         z_min_transform = Transform()
-        z_min_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        z_min_transform.set_translation(np.array([0, 0, -0.5]))
+        z_min_transform.set_translation(np.array([0, 0, -0.5]) * np.array([radius, radius, radius]))
         z_max_transform = Transform()
-        z_max_transform.set_scale(1 / (np.array([0.001, 0.001, 0.001]) + x_circle_transform.get_world_scale()))
-        z_max_transform.set_translation(np.array([0, 0, 0.5]))
+        z_max_transform.set_translation(np.array([0, 0, 0.5]) * np.array([radius, radius, radius]))
 
-        self.x_min_gizmo.set_world_matrix(master_mat.dot(x_min_transform.get_mat()))
-        self.x_max_gizmo.set_world_matrix(master_mat.dot(x_max_transform.get_mat()))
-        self.y_min_gizmo.set_world_matrix(master_mat.dot(y_min_transform.get_mat()))
-        self.y_max_gizmo.set_world_matrix(master_mat.dot(y_max_transform.get_mat()))
-        self.z_min_gizmo.set_world_matrix(master_mat.dot(z_min_transform.get_mat()))
-        self.z_max_gizmo.set_world_matrix(master_mat.dot(z_max_transform.get_mat()))
+        self.x_min_gizmo.set_world_matrix(master_transform.get_mat().dot(x_min_transform.get_mat()))
+        self.x_max_gizmo.set_world_matrix(master_transform.get_mat().dot(x_max_transform.get_mat()))
+        self.y_min_gizmo.set_world_matrix(master_transform.get_mat().dot(y_min_transform.get_mat()))
+        self.y_max_gizmo.set_world_matrix(master_transform.get_mat().dot(y_max_transform.get_mat()))
+        self.z_min_gizmo.set_world_matrix(master_transform.get_mat().dot(z_min_transform.get_mat()))
+        self.z_max_gizmo.set_world_matrix(master_transform.get_mat().dot(z_max_transform.get_mat()))
 
     def on_gui_remove(self):
         if self.x_circle_gizmo is not None:
