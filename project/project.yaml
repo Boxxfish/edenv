@@ -11,4 +11,3 @@ components:
  - components.rigidbody
  - components.hinge_constraint
  - components.point_constraint
- - components.cone_constraint

@@ -13,6 +13,7 @@ from panda3d.core import LVector3f
 from tools.envedit import helper
 from tools.envedit.gizmos.gizmo_system import GizmoSystem
 from tools.envedit.gizmos.mesh_gizmo import MeshGizmo
+from tools.envedit.transform import Transform
 
 
 class SphereHandleGizmo(MeshGizmo):
@@ -57,8 +58,10 @@ class SphereHandleGizmo(MeshGizmo):
         # Get starting position of node and projected mouse
         view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
                                    GizmoSystem.gizmo_system.raw_mouse_y])
+        self.plane_normal = helper.panda_vec3_to_np(GizmoSystem.gizmo_system.base.camera.getTransform().getPos() - self.get_geom().getPos())
+        self.start_pos = helper.panda_vec3_to_np(self.get_geom().getPos())
         self.start_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
-                                                                     self.component.node.transform.get_world_translation(),
+                                                                     self.start_pos,
                                                                      self.plane_normal)
 
         # Tell gizmo to start dragging
@@ -76,15 +79,21 @@ class SphereHandleGizmo(MeshGizmo):
         view_mouse_pos = np.array([GizmoSystem.gizmo_system.raw_mouse_x,
                                    GizmoSystem.gizmo_system.raw_mouse_y])
         new_mouse_world_pos = self.get_ray_plane_intersection(view_mouse_pos,
-                                                              self.component.node.transform.get_world_translation(),
+                                                              self.start_pos,
                                                               self.plane_normal)
         if new_mouse_world_pos is None or self.start_mouse_world_pos is None:
             return
 
+        # Create the rotation matrix
+        rot_transform = Transform()
+        rot_transform.set_matrix(self.matrix)
+        rot_mat = rot_transform.get_rot_mat(rot_transform.get_rotation())
+
         # Create the translation vector
         plane_diff = new_mouse_world_pos - self.start_mouse_world_pos
-        transformed_axis = self.matrix.dot(np.array([self.axis[0], self.axis[1], self.axis[2], 1]))[:3]
+        transformed_axis = rot_mat.dot(np.array([self.axis[0], self.axis[1], self.axis[2], 1]))[:3]
         drag_amount = (plane_diff.dot(transformed_axis) / transformed_axis.dot(transformed_axis))
+        print(plane_diff)
         if self.translate_callback is not None:
             self.translate_callback(drag_amount, self.data)
 

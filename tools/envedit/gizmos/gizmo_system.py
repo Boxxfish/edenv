@@ -5,9 +5,13 @@ Generates and manages gizmos.
 """
 from os import path
 from pathlib import Path
+
+import numpy as np
 from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task
 from panda3d.core import Shader, Filename, NodePath, PNMImage
+
+from tools.envedit import helper
 
 
 class GizmoSystem(DirectObject):
