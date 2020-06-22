@@ -1,7 +1,7 @@
 # EDEnv
 Repository for the EDEnv environment creation system.
 
-[README Image](image.png)
+![README Image](image.png)
 
 ## What is it?
 
