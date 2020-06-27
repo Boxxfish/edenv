@@ -25,8 +25,11 @@ from tools.run.trial import Trial
 class Player(ShowBase):
 
     def __init__(self, env_name, trial_data, headless=False):
-        ShowBase.__init__(self, windowType="none" if headless else "onscreen")
         self.manually_quit = True
+        try:
+            ShowBase.__init__(self, windowType="none" if headless else "onscreen")
+        except:
+            self.trial_finished_callback()
 
         # Allows importing components from project folder
         sys.path.append(".")
